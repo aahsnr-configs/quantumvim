@@ -1,0 +1,17 @@
+std = "neovim"
+
+[lints]
+# Style rules & structural layout patterns (allowed for flexibility)
+global_usage = "allow"
+mixed_table = "allow"
+multiple_statements = "allow"
+empty_if = "allow"
+unscoped_variables = "allow"
+
+# Static analysis logic checks (strict verification)
+shadowing = "warn"
+unused_variable = "warn"
+incorrect_standard_library_use = "deny"
+divide_by_zero = "deny"
+unreachable_code = "deny"
+duplicate_keys = "deny"

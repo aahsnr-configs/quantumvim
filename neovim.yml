@@ -1,0 +1,25 @@
+name: neovim
+base: lua51
+globals:
+  # Core Neovim Entry Point
+  vim:
+    any: true
+
+  # LuaJIT Architecture Extensions
+  jit:
+    any: true
+  bit:
+    any: true
+
+  # Test Suite Globals (Plenary / Busted ecosystem support)
+  describe:
+    any: true
+  it:
+    any: true
+  before_each:
+    any: true
+  after_each:
+    any: true
+  assert:
+    any: true
+
