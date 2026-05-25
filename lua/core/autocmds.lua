@@ -8,7 +8,9 @@ local core_group = augroup("CoreAutocmds", { clear = true })
 autocmd("TextYankPost", {
   group = core_group,
   desc = "Highlight yanked text for 200 ms",
-  callback = function() vim.highlight.on_yank { higroup = "IncSearch", timeout = 200 } end,
+  callback = function()
+    vim.highlight.on_yank({ higroup = "IncSearch", timeout = 200 })
+  end,
 })
 
 -- 2. Strip trailing whitespace before writing the file
@@ -17,9 +19,11 @@ autocmd("BufWritePre", {
   pattern = "*",
   desc = "Remove trailing whitespace on save",
   callback = function(args)
-    if not vim.bo[args.buf].modifiable then return end
+    if not vim.bo[args.buf].modifiable then
+      return
+    end
     local view = vim.fn.winsaveview()
-    vim.cmd [[%s/\s\+$//e]]
+    vim.cmd([[%s/\s\+$//e]])
     vim.fn.winrestview(view)
   end,
 })
@@ -29,10 +33,14 @@ autocmd("BufReadPost", {
   group = core_group,
   desc = "Restore last cursor position (skips git commit messages)",
   callback = function()
-    if vim.bo.filetype == "gitcommit" then return end
+    if vim.bo.filetype == "gitcommit" then
+      return
+    end
     local mark = vim.api.nvim_buf_get_mark(0, '"')
     local line_count = vim.api.nvim_buf_line_count(0)
-    if mark[1] > 0 and mark[1] <= line_count then vim.api.nvim_win_set_cursor(0, mark) end
+    if mark[1] > 0 and mark[1] <= line_count then
+      vim.api.nvim_win_set_cursor(0, mark)
+    end
   end,
 })
 
@@ -41,7 +49,9 @@ autocmd("FileType", {
   group = core_group,
   pattern = "*",
   desc = "Remove c, r, o from formatoptions to disable comment continuation",
-  callback = function() vim.opt_local.formatoptions:remove { "c", "r", "o" } end,
+  callback = function()
+    vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+  end,
 })
 
 -- Keymap to toggle autoformat on/off

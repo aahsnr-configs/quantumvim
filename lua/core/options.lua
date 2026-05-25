@@ -41,7 +41,7 @@ vim.opt.splitbelow = true
 
 -- ── Persistence ────────────────────────────────────────────────────────────
 vim.opt.undofile = true
-vim.opt.undodir = vim.fn.stdpath "data" .. "/undo"
+vim.opt.undodir = vim.fn.stdpath("data") .. "/undo"
 vim.opt.swapfile = false
 vim.opt.backup = false
 vim.opt.writebackup = false
@@ -53,7 +53,7 @@ vim.opt.autoread = true
 vim.opt.fileencoding = "utf-8"
 vim.opt.spell = false
 vim.opt.spelllang = { "en_us" }
-vim.opt.isfname:append "@-@"
+vim.opt.isfname:append("@-@")
 
 -- ── Silence optional provider warnings ─────────────────────────────────────
 vim.g.loaded_perl_provider = 0

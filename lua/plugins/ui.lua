@@ -20,14 +20,14 @@ return {
         integrations = {
           -- Completion / UI
           blink_cmp = true,
-          noice = true, -- FIX #2: was missing
+          noice = true,
           notify = true,
           -- Editor tools
           gitsigns = true,
           telescope = true,
           treesitter = true,
-          illuminate = true, -- FIX #3: was missing
-          flash = true, -- FIX #4: was missing
+          illuminate = true,
+          flash = true,
           -- File explorer / navigation
           neotree = true, -- FIX #1: was wrongly `nvimtree = true`
           -- nvimtree is NOT installed; neo-tree is

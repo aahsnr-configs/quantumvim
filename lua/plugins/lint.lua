@@ -5,17 +5,12 @@ return {
     config = function()
       local lint = require("lint")
 
-      lint.linters.selene = {
-        cmd = "selene",
-        stdin = false,
-        args = {
-          "--display-style",
-          "quiet",
-          "--config",
-          vim.fn.expand("~/.config/nvim/selene.toml"),
-        },
-        append_fname = true,
-        stream = "stderr",
+      -- Mutate only the args property to preserve the built-in parser function
+      lint.linters.selene.args = {
+        "--display-style",
+        "quiet",
+        "--config",
+        vim.fn.expand("~/.config/nvim/selene.toml"),
       }
 
       lint.linters_by_ft = {

@@ -33,46 +33,45 @@ return {
       "j-hui/fidget.nvim",
     },
     config = function()
-      -- on_attach via LspAttach autocmd (v2 pattern)
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(ev)
-          local client = vim.lsp.get_client_by_id(ev.data.client_id)
           local bufnr = ev.buf
-          local map = function(keys, func, desc)
-            vim.keymap.set("n", keys, func, { buffer = bufnr, desc = "LSP: " .. desc })
+          local map = function(keys, func, desc, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            opts.desc = "LSP: " .. desc
+            vim.keymap.set("n", keys, func, opts)
           end
           map("gd", vim.lsp.buf.definition, "Go to Definition")
-          map("gr", function()
-            require("telescope.builtin").lsp_references()
-          end, "References")
-          map("gD", vim.lsp.buf.declaration, "Go to Declaration")
-          map("gI", function()
-            require("telescope.builtin").lsp_implementations()
-          end, "Implementations")
-          map("K", vim.lsp.buf.hover, "Hover Documentation")
-          map("<leader>ca", vim.lsp.buf.code_action, "Code Action")
-          map("<leader>rn", function()
-            return ":IncRename " .. vim.fn.expand("<cword>")
-          end, "Rename Symbol")
+          map("gr", vim.lsp.buf.references, "Go to References")
+          map("gI", vim.lsp.buf.implementation, "Go to Implementation")
           map("<leader>D", vim.lsp.buf.type_definition, "Type Definition")
-          if client and client:supports_method("textDocument/inlayHint") then
-            vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-          end
+          map("<leader>ds", vim.lsp.buf.document_symbol, "Document Symbols")
+          map("<leader>ws", vim.lsp.buf.workspace_symbol, "Workspace Symbols")
+          map("<leader>rn", function()
+            return ":" .. vim.v.count1 .. "IncRename "
+          end, "Rename Symbol", { expr = true })
+          map("<leader>ca", vim.lsp.buf.code_action, "Code Action")
+          map("K", vim.lsp.buf.hover, "Hover Documentation")
+
           if vim.bo[bufnr].filetype == "markdown" then
             vim.diagnostic.enable(false, { bufnr = bufnr })
           end
         end,
       })
 
-      -- Global capabilities
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      local ok_blink, blink = pcall(require, "blink.cmp")
-      if ok_blink then
-        capabilities = blink.get_lsp_capabilities(capabilities)
-      end
+      -- Modern diagnostic configuration (Neovim 0.12 best practices)
+      vim.diagnostic.config({
+        virtual_text = false, -- Never describe the error/warning inline
+        signs = false, -- Remove any shorthand on the left signcolumn
+        underline = true,
+        update_in_insert = false,
+        severity_sort = true,
+      })
+
+      local capabilities = require("blink.cmp").get_lsp_capabilities()
       vim.lsp.config("*", { capabilities = capabilities })
 
-      -- Per-server settings
       vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
@@ -115,12 +114,45 @@ return {
     "folke/trouble.nvim",
     cmd = "Trouble",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = { use_diagnostic_signs = true },
+    opts = { use_diagnostic_signs = false },
     keys = {
       { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
       { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
       { "<leader>cs", "<cmd>Trouble symbols toggle<cr>", desc = "Symbols (Trouble)" },
       { "<leader>cl", "<cmd>Trouble lsp toggle<cr>", desc = "LSP (Trouble)" },
+
+      -- Diagnostic Inspection and Filtering Keybindings
+      {
+        "<leader>ce",
+        function()
+          vim.diagnostic.open_float({ scope = "cursor", severity = vim.diagnostic.severity.ERROR })
+        end,
+        desc = "Diagnostics: Describe Error at Cursor",
+      },
+      {
+        "<leader>xe",
+        "<cmd>Trouble diagnostics toggle filter.severity=ERROR<cr>",
+        desc = "Diagnostics: Toggle All Errors",
+      },
+      {
+        "<leader>cw",
+        function()
+          vim.diagnostic.open_float({ scope = "cursor", severity = vim.diagnostic.severity.WARN })
+        end,
+        desc = "Diagnostics: Describe Warning at Cursor",
+      },
+      {
+        "<leader>xw",
+        "<cmd>Trouble diagnostics toggle filter.severity=WARN<cr>",
+        desc = "Diagnostics: Toggle All Warnings",
+      },
+      {
+        "<leader>xd",
+        function()
+          vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+        end,
+        desc = "Diagnostics: Toggle Diagnostics On/Off",
+      },
     },
   },
 }
