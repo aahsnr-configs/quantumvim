@@ -376,58 +376,56 @@ return {
 
 ```lua
 return {
-  -- ── Dressing Module (Modernized System Inputs) ──────────────────────────────
+  -- ── UI Notifications ───────────────────────────────────────────────────
   {
-    "stevearc/dressing.nvim",
-    event = "VeryLazy",
-    opts = {},
-  },
-
-  -- ── Lualine Engine (High-Performance Status Bars) ───────────────────────────
-  {
-    "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    "rcarriga/nvim-notify",
     opts = {
-      options = {
-        theme = "catppuccin",
-        component_separators = { left = "", right = "" },
-        section_separators = { left = "", right = "" },
-        globalstatus = true,
-      },
+      timeout = 3000,
+      max_height = function() return math.floor(vim.o.lines * 0.75) end,
+      max_width = function() return math.floor(vim.o.columns * 0.75) end,
+      render = "compact",
     },
   },
 
-  -- ── Bufferline Module (Decoupled Visual Tab Tracking) ───────────────────────
+  -- ── UI Replacement (Noice) ─────────────────────────────────────────────
   {
-    "akinsho/bufferline.nvim",
+    "folke/noice.nvim",
     event = "VeryLazy",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+    },
     opts = {
-      options = {
-        mode = "buffers",
-        always_show_bufferline = true,
-        offsets = {
-          {
-            filetype = "neo-tree",
-            text = "File Architecture",
-            text_align = "left",
-            separator = true,
-          },
+      lsp = {
+        -- override markdown rendering so that cmp and other plugins use Treesitter
+        override = {
+          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+          ["vim.lsp.util.stylize_markdown"] = true,
         },
       },
+      routes = {
+        {
+          filter = { event = "msg_show", kind = "", find = "written" },
+          opts = { skip = true },
+        },
+      },
+      presets = {
+        bottom_search = true, -- use a classic bottom cmdline for search
+        command_palette = true, -- position the cmdline and popupmenu together
+        long_message_to_split = true, -- long messages will be sent to a split
+        inc_rename = false, -- enables an input dialog for inc-rename.nvim
+        lsp_doc_border = true, -- add a border to hover docs and signature help
+      },
     },
   },
 
-  -- ── Indent Blankline (Visual Structure Guides) ──────────────────────────────
+  -- ── Indent guides ────────────────────────────────────────────────────────
   {
     "lukas-reineke/indent-blankline.nvim",
     event = "BufReadPost",
     main = "ibl",
     opts = { indent = { char = "│" }, scope = { enabled = false } },
   },
-
-  -- ── Mini.Indentscope (Contextual Dynamic Trackers) ──────────────────────────
   {
     "echasnovski/mini.indentscope",
     event = "BufReadPost",
@@ -439,13 +437,13 @@ return {
         draw = { animation = require("mini.indentscope").gen_animation.none() },
       })
 
-      -- Neutralize scope processing constraints over interactive system layouts
+      -- Disable indentscope on UI/non-code filetypes
       vim.api.nvim_create_autocmd("FileType", {
         pattern = {
           "help",
           "alpha",
           "dashboard",
-          "snacks_dashboard", -- Resolved dashboard flickering
+          "snacks_dashboard",
           "lazy",
           "mason",
           "notify",
@@ -454,6 +452,7 @@ return {
           "trouble",
           "qf",
           "TelescopePrompt",
+          "startify",
           "snacks_terminal",
         },
         callback = function()
@@ -462,71 +461,72 @@ return {
       })
     end,
   },
-
-  -- ── Dropbar Panel (Interactive Visual Path Breadcrumbs) ─────────────────────
-  {
-    "Bekaboo/dropbar.nvim",
-    event = "VeryLazy",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = {},
-  },
 }
-
 ```
 
 ### `lua/plugins/completion.lua`
 
 ```lua
 return {
-  {
-    "rafamadriz/friendly-snippets",
-    lazy = true, -- Deferred till runtime injection needs require it
+  "saghen/blink.cmp",
+  -- Tracks version 2 development directly from the main branch
+  branch = "main",
+  event = { "InsertEnter", "CmdlineEnter" },
+  dependencies = {
+    -- Co-located here with lazy=true to eliminate the redundant top-level array table
+    { "rafamadriz/friendly-snippets", lazy = true },
   },
+  opts = {
+    fuzzy = { implementation = "prefer_rust_with_warning" },
 
-  {
-    "saghen/blink.cmp",
-    version = "1.*",
-    event = { "InsertEnter", "CmdlineEnter" },
-    dependencies = {
-      "rafamadriz/friendly-snippets",
+    keymap = {
+      preset = "default",
+      -- Tab cycles forward through candidate selections seamlessly
+      ["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
+      -- Shift+Tab cycles backward up through candidate selections
+      ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
+      ["<C-b>"] = { "scroll_documentation_up", "fallback" },
+      ["<C-f>"] = { "scroll_documentation_down", "fallback" },
     },
-    opts = {
-      fuzzy = { implementation = "prefer_rust_with_warning" }, -- Rust-compiled engine
 
-      keymap = {
-        preset = "default",
-        ["<Tab>"] = { "snippet_forward", "fallback" }, -- Loop forwards through snippet nodes
-        ["<S-Tab>"] = { "snippet_backward", "fallback" }, -- Loop backwards through snippet nodes
-        ["<C-b>"] = { "scroll_documentation_up", "fallback" },
-        ["<C-f>"] = { "scroll_documentation_down", "fallback" },
+    appearance = {
+      nerd_font_variant = "mono",
+    },
+
+    completion = {
+      list = {
+        selection = {
+          preselect = false,
+          auto_insert = true,
+        },
       },
-
-      appearance = {
-        nerd_font_variant = "mono",
+      documentation = {
+        auto_show = true,
+        auto_show_delay_ms = 200
       },
-
-      completion = {
-        documentation = { auto_show = true, auto_show_delay_ms = 200 },
-        menu = {
-          border = "rounded",
-          draw = {
-            columns = {
-              { "label", "label_description", gap = 1 },
-              { "kind_icon", "kind" },
-            },
+      menu = {
+        border = "rounded",
+        draw = {
+          columns = {
+            { "label", "label_description", gap = 1 },
+            { "kind_icon", "kind" },
           },
         },
       },
-
-      sources = {
-        default = { "lsp", "path", "snippets", "buffer" },
-        per_filetype = {
-          markdown = { "path", "snippets", "buffer" }, -- Omit direct LSP completion noises inside prose files
-        },
-      },
-
-      signature = { enabled = true }, -- Inline parameter signature help popups
     },
+
+    sources = {
+      default = { "lsp", "path", "snippets", "buffer" },
+      per_filetype = {
+        markdown = { "path", "snippets", "buffer" },
+        tex = { "lsp", "path", "snippets", "buffer" },
+        latex = { "lsp", "path", "snippets", "buffer" },
+        plaintex = { "lsp", "path", "snippets", "buffer" },
+      },
+      providers = {},
+    },
+
+    signature = { enabled = true },
   },
 }
 
@@ -913,40 +913,94 @@ return {
 ### `lua/plugins/markdown.lua`
 
 ```lua
--- Isolate custom markdown filetype behaviors within specific hook environments
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "markdown",
+-- ── Automated Markdown Environment Setup ─────────────────────────────────────
+-- Instantly runs hooks when editing Markdown documents to initialize style guidelines,
+-- custom input macros, and ensure local linter configs exist non-destructively.
+vim.api.nvim_create_autocmd({ "FileType", "BufReadPost", "BufNewFile" }, {
+  pattern = { "markdown", "md" },
   callback = function()
-    vim.wo.foldmethod = "expr"
-    vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-    vim.wo.foldenable = true -- Enable folding for structured sections
-    vim.wo.foldlevel = 99
-    vim.wo.foldcolumn = "1"
+    -- Ensure buffer-local options are configured for render-markdown aesthetics
+    vim.opt_local.conceallevel = 2
+    vim.opt_local.wrap = true
 
-    vim.schedule(function()
-      pcall(vim.cmd, "normal! zx")
-    end)
+    -- 1. Autopair Expansion Rules for Asterisks (**)
+    -- Typing '**' yields 2 pairs (**|**). Pressing it again yields 4 (****|****),
+    -- and a third time yields 6 (******|******) with the cursor centered perfectly.
+    vim.keymap.set("i", "**", "**<Left><Left>", { buffer = true, silent = true })
 
-    vim.keymap.set("n", "<Tab>", "za", { buffer = true, desc = "Toggle fold", silent = true })
-    vim.keymap.set("n", "<S-Tab>", function()
-      vim.wo.foldlevel = (vim.wo.foldlevel == 99) and 0 or 99
-    end, { buffer = true, desc = "Cycle all folds", silent = true })
+    -- 2. Horizontal Rule Automation (---)
+    -- Pressing '-' on an empty or whitespace-only line expands instantly into '---'
+    -- and drops down to a new line. Standard hyphens are preserved for lists.
+    vim.keymap.set("i", "-", function()
+      local col = vim.fn.col(".")
+      local line = vim.fn.getline(".")
+      if line:sub(1, col - 1):match("^%s*$") then
+        return "---<CR>"
+      else
+        return "-"
+      end
+    end, { buffer = true, expr = true, silent = true })
 
-    vim.keymap.set("n", "<leader>zh", function() vim.wo.foldlevel = 2 end, { buffer = true, desc = "Fold to H2", silent = true })
-    vim.keymap.set("n", "<leader>zj", function() vim.wo.foldlevel = math.max(0, vim.wo.foldlevel - 1) end, { buffer = true, desc = "Fold more", silent = true })
-    vim.keymap.set("n", "<leader>zk", function() vim.wo.foldlevel = math.min(99, vim.wo.foldlevel + 1) end, { buffer = true, desc = "Fold less", silent = true })
+    -- 3. Non-Destructive .markdownlint-cli2.yaml Template Creation
+    local buf_name = vim.api.nvim_buf_get_name(0)
+    if buf_name ~= "" then
+      local dir = vim.fn.fnamemodify(buf_name, ":h")
+      local config_path = dir .. "/.markdownlint-cli2.yaml"
+
+      -- Verify if configuration file already exists to prevent overwriting
+      if not vim.uv.fs_stat(config_path) then
+        local template = [[# Declarative Markdown Linter Configuration
+config:
+  default: true
+  MD013: false # Disable strict line length rules (handled by Neovim wrap options)
+  MD033: false # Allow inline HTML elements within files
+  MD024: false # Allow multiple headers with identical naming structures
+]]
+        local f = io.open(config_path, "w")
+        if f then
+          f:write(template)
+          f:close()
+        end
+      end
+    end
   end,
 })
 
 return {
+  -- ── Modernized Markdown Renderer ──────────────────────────────────────────
   {
     "MeanderingProgrammer/render-markdown.nvim",
+    ft = { "markdown", "md" },
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
-    ft = { "markdown", "quarto" },
     opts = {
-      code = { sign = true, width = "block", right_pad = 1 },
+      heading = {
+        sign = true,
+        icons = { "󰉫 ", "󰉬 ", "󰉭 ", "󰉮 ", "󰉯 ", "󰉰 " },
+        backgrounds = {
+          "RenderMarkdownH1Bg",
+          "RenderMarkdownH2Bg",
+          "RenderMarkdownH3Bg",
+          "RenderMarkdownH4Bg",
+          "RenderMarkdownH5Bg",
+          "RenderMarkdownH6Bg",
+        },
+        foregrounds = {
+          "RenderMarkdownH1",
+          "RenderMarkdownH2",
+          "RenderMarkdownH3",
+          "RenderMarkdownH4",
+          "RenderMarkdownH5",
+          "RenderMarkdownH6",
+        },
+      },
+      code = {
+        sign = true,
+        width = "block",
+        right_pad = 4,
+        left_pad = 4,
+        border = "rounded",
+      },
       pipe_table = { preset = "round" },
-
       callout = {
         note      = { raw = "[!NOTE]",      rendered = "󰋽 Note",      highlight = "DiagnosticHint" },
         tip       = { raw = "[!TIP]",       rendered = "󰙴 Tip",       highlight = "DiagnosticOk" },
@@ -954,26 +1008,41 @@ return {
         warning   = { raw = "[!WARNING]",   rendered = "󰀪 Warning",   highlight = "DiagnosticWarn" },
         caution   = { raw = "[!CAUTION]",   rendered = "󰳦 Caution",   highlight = "DiagnosticError" },
       },
-
-      link      = { enabled = true, image = "󰋩 " },
-      checkbox  = { enabled = true, unchecked = { icon = "󰄱 " }, checked = { icon = "󰱔 " } },
-      bullet    = { enabled = true, icons = { "●", "○", "◆", "◇" } },
-      quote     = { enabled = true, icon = "┃" },
-      dash      = { enabled = true, icon = "─" },
+      link = { enabled = true, image = "󰋩 " },
+      checkbox = {
+        enabled = true,
+        unchecked = { icon = "󰄱 " },
+        checked = { icon = "󰱔 " },
+      },
+      bullet = { enabled = true, icons = { "●", "○", "◆", "◇" } },
+      quote = { enabled = true, icon = "┃" },
+      dash = { enabled = true, icon = "─" },
     },
   },
 
+  -- ── Live Synchronized Browser Viewer (Added Extension) ─────────────────────
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    ft = { "markdown" },
+    build = function()
+      vim.fn["mkdp#util#install"]()
+    end,
+    keys = {
+      { "<leader>mp", "<cmd>MarkdownPreviewToggle<cr>", desc = "Markdown: Toggle Live Preview" },
+    },
+  },
+
+  -- ── Task & Interactive Checkbox Operations ─────────────────────────────────
   {
     "thenbe/markdown-todo.nvim",
     ft = { "md", "markdown" },
     keys = {
-      { "<leader>tu", "<Plug>(markdown-todo-mark-as-todo)", desc = "Mark as TODO" },
-      { "<leader>td", "<Plug>(markdown-todo-mark-as-done)", desc = "Mark as DONE" },
-      { "<leader>tx", "<Plug>(markdown-todo-toggle)", desc = "Toggle TODO status" },
+      { "<leader>tu", "<Plug>(markdown-todo-mark-as-todo)", desc = "Todo: Mark as Unresolved" },
+      { "<leader>tc", "<Plug>(markdown-todo-mark-as-complete)", desc = "Todo: Mark as Complete" },
     },
   },
 }
-
 ```
 
 ### `lua/plugins/latex.lua`
