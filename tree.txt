@@ -1,0 +1,23 @@
+├── init.lua
+├── Issues.md
+├── lazy-lock.json
+├── LICENSE
+├── lua
+│   ├── core
+│   │   ├── autocmds.lua
+│   │   ├── keymaps.lua
+│   │   └── options.lua
+│   └── plugins
+│       ├── completion.lua
+│       ├── editor.lua
+│       ├── formatter.lua
+│       ├── git.lua
+│       ├── lint.lua
+│       ├── lsp.lua
+│       ├── markdown.lua
+│       ├── mason.lua
+│       ├── tools.lua
+│       └── ui.lua
+├── neovim.yml
+├── README.md
+└── selene.toml
