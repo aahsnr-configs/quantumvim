@@ -4,7 +4,7 @@ You have to perform the following tasks for my attached neovim config files:
 
 2. Your `2nd task` is then to rewrite the final ui.lua file as well with all the changes.
 
-3. When I navigating any file opened using neovim, pressing any arrow once moves the cursor once but holding the key down does not continuously move the arrow. Only after pressing the same key again and holding it down continues to move the the cursor. I want this behavior to happen after the 1st press of any arrow key. `Everything here that I need you to do is your 3rd task`. _Only write out the changes needed for any files related to this `3rd task`_.
+3. When I navigating any file opened using neovim, pressing any arrow once moves the cursor once but holding the key down does not continuously move the arrow. Only after pressing the same key again and holding it down continues to move the the cursor. I want this behavior to happen after the 1st press of any arrow key. `Everything here that I need you to do is your 3rd task`. Rewrite the whole file that need changes for this 3rd task.
 
 4. Before integrating the git.lua file from the changesv1.md file, I need to some stuff about gitsigns.nvim: what does the following things do for git in general,
 

@@ -144,40 +144,52 @@ vim.opt.fileencoding = "utf-8"   -- Guarantee default unicode serialization
 
 ```lua
 local map = vim.keymap.set
-local opts = { silent = true }
 
--- ── Window Split Controls ───────────────────────────────────────────────────
-map("n", "<leader>sv", "<cmd>vsplit<cr>", { desc = "Split window vertically", silent = true })
-map("n", "<leader>sh", "<cmd>split<cr>", { desc = "Split window horizontally", silent = true })
-map("n", "<leader>se", "<C-w>=", { desc = "Equalize split sizes", silent = true })
-map("n", "<leader>sx", "<cmd>close<cr>", { desc = "Close current split", silent = true })
+-- ── Arrow Key Continuous Repeat Fix ────────────────────────────────────────
+-- `nowait = true` forces immediate execution on the 1st press, bypassing
+-- timeout lookaheads and allowing continuous holding to repeat instantly.
+local arrow_opts = { remap = false, silent = true, nowait = true }
 
--- Directional Navigation Bridges
-map("n", "<C-h>", "<C-w>h", { desc = "Navigate to left window", silent = true })
-map("n", "<C-j>", "<C-w>j", { desc = "Navigate to lower window", silent = true })
-map("n", "<C-k>", "<C-w>k", { desc = "Navigate to upper window", silent = true })
-map("n", "<C-l>", "<C-w>l", { desc = "Navigate to right window", silent = true })
+-- Normal & Visual Modes (Mapped directly to native motions)
+map({ "n", "v" }, "<Up>", "k", arrow_opts)
+map({ "n", "v" }, "<Down>", "j", arrow_opts)
+map({ "n", "v" }, "<Left>", "h", arrow_opts)
+map({ "n", "v" }, "<Right>", "l", arrow_opts)
 
--- ── Visual Lines & Block Manipulations ──────────────────────────────────────
-map("n", "<A-j>", "<cmd>m .+1<cr>==", { desc = "Move line down", silent = true })
-map("n", "<A-k>", "<cmd>m .-2<cr>==", { desc = "Move line up", silent = true })
-map("v", "<A-j>", ":m '>+1<cr>gv=gv", { desc = "Move selection down", silent = true })
-map("v", "<A-k>", ":m '<-2<cr>gv=gv", { desc = "Move selection up", silent = true })
+-- Insert Mode (Preserves cursor navigation without breaking undo history)
+map("i", "<Up>", "<Up>", arrow_opts)
+map("i", "<Down>", "<Down>", arrow_opts)
+map("i", "<Left>", "<Left>", arrow_opts)
+map("i", "<Right>", "<Right>", arrow_opts)
 
--- Stay focused inside Visual Block Indent bounds
-map("v", "<", "<gv", { desc = "Indent left and preserve selection", silent = true })
-map("v", ">", ">gv", { desc = "Indent right and preserve selection", silent = true })
 
--- ── Fast Escapes & UI Actions ────────────────────────────────────────────────
-map("i", "jk", "<esc>", { desc = "Exit insert mode", silent = true })
-map("n", "<leader>nh", "<cmd>nohlsearch<cr>", { desc = "Clear search highlight", silent = true })
+-- ── Window Management & Splits ──────────────────────────────────────────────
+map("n", "<leader>sv", "<cmd>vsplit<cr>", { desc = "Split window vertically" })
+map("n", "<leader>sh", "<cmd>split<cr>", { desc = "Split window horizontally" })
+map("n", "<leader>se", "<C-w>=", { desc = "Equalize split sizes" })
+map("n", "<leader>sx", "<cmd>close<cr>", { desc = "Close current split" })
 
--- Clipboard Protection: Paste over selection without corrupting active registers
-map("x", "p", [["_dP]], { desc = "Paste voiding active register overrides", silent = true })
+-- Window Navigation Shortcuts
+map("n", "<C-h>", "<C-w>h", { desc = "Navigate to left window" })
+map("n", "<C-j>", "<C-w>j", { desc = "Navigate to lower window" })
+map("n", "<C-k>", "<C-w>k", { desc = "Navigate to upper window" })
+map("n", "<C-l>", "<C-w>l", { desc = "Navigate to right window" })
 
--- High-frequency Buffer Switching Mechanics
-map("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Switch to previous buffer", silent = true })
-map("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Switch to next buffer", silent = true })
+
+-- ── Code & Line Manipulation ───────────────────────────────────────────────
+-- Move current lines or visual selections up/down reactively
+map("n", "<A-j>", "<cmd>m .+1<cr>==", { desc = "Move line down" })
+map("n", "<A-k>", "<cmd>m .-2<cr>==", { desc = "Move line up" })
+map("v", "<A-j>", ":m '>+1<cr>gv=gv", { desc = "Move selection down" })
+map("v", "<A-k>", ":m '<-2<cr>gv=gv", { desc = "Move selection up" })
+
+
+-- ── Editor Utilities ────────────────────────────────────────────────────────
+-- High-speed escape fallback
+map("i", "jk", "<esc>", { desc = "Exit insert mode" })
+
+-- Clear active search highlighting
+map("n", "<leader>nh", "<cmd>nohlsearch<cr>", { desc = "Clear search highlights" })
 
 ```
 
@@ -799,20 +811,22 @@ return {
 
 ```lua
 return {
+  -- ── Git Gutter & Change Highlights ───────────────────────────────────────
   {
     "lewis6991/gitsigns.nvim",
     event = "BufReadPre",
     opts = {
+      -- Configured to use ONLY the uniform "▎" bar across all change definitions
       signs = {
-        add = { text = "│" },
-        change = { text = "│" },
-        delete = { text = "_" },
-        topdelete = { text = "‾" },
-        changedelete = { text = "~" },
-        untracked = { text = "┆" },
+        add          = { text = "▎" },
+        change       = { text = "▎" },
+        delete       = { text = "▎" },
+        topdelete    = { text = "▎" },
+        changedelete = { text = "▎" },
+        untracked    = { text = "▎" },
       },
-      linehl = false,
-      numhl = false,
+      linehl = true, -- Enabled: Highlights full text line backgrounds
+      numhl = true,  -- Enabled: Highlights line numbers in the gutter column
       attach_to_untracked = true,
       watch_gitdir = { follow_files = true },
       on_attach = function(bufnr)
@@ -821,45 +835,79 @@ return {
           vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc, silent = true })
         end
 
+        -- Standard Hunk Operations & Mappings
         map("n", "<leader>hs", gs.stage_hunk, "Stage hunk")
         map("n", "<leader>hr", gs.reset_hunk, "Reset hunk")
-        map("v", "<leader>hs", function() gs.stage_hunk { vim.fn.line("."), vim.fn.line("v") } end, "Stage hunk (visual)")
-        map("v", "<leader>hr", function() gs.reset_hunk { vim.fn.line("."), vim.fn.line("v") } end, "Reset hunk (visual)")
+        map("v", "<leader>hs", function() gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") }) end, "Stage hunk (visual)")
+        map("v", "<leader>hr", function() gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") }) end, "Reset hunk (visual)")
         map("n", "<leader>hS", gs.stage_buffer, "Stage buffer")
         map("n", "<leader>hR", gs.reset_buffer, "Reset buffer")
+        map("n", "<leader>hu", gs.undo_stage_hunk, "Undo stage hunk")
         map("n", "<leader>hp", gs.preview_hunk, "Preview hunk")
-        map("n", "<leader>hb", function() gs.blame_line { full = true } end, "Blame line")
+        map("n", "<leader>hb", function() gs.blame_line({ full = true }) end, "Blame line")
+        map("n", "<leader>tb", gs.toggle_current_line_blame, "Toggle line blame")
         map("n", "<leader>hd", gs.diffthis, "Diff this")
         map("n", "<leader>hD", function() gs.diffthis("~") end, "Diff this ~")
+
+        -- Text Object for hunk selection
         map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "Select inside hunk")
       end,
     },
+    config = function(_, opts)
+      require("gitsigns").setup(opts)
+
+      -- Dynamically links gitsigns tracking groups to the Catppuccin palette
+      local colors = _G.colors or {}
+      if colors.green then
+        -- 1. Gutter Signs (Foreground Symbols)
+        vim.api.nvim_set_hl(0, "GitSignsAdd", { fg = colors.green })
+        vim.api.nvim_set_hl(0, "GitSignsChange", { fg = colors.yellow })
+        vim.api.nvim_set_hl(0, "GitSignsDelete", { fg = colors.red })
+        vim.api.nvim_set_hl(0, "GitSignsTopdelete", { fg = colors.red })
+        vim.api.nvim_set_hl(0, "GitSignsChangedelete", { fg = colors.yellow })
+        vim.api.nvim_set_hl(0, "GitSignsUntracked", { fg = colors.green })
+
+        -- 2. Line Number Colorizations (numhl)
+        vim.api.nvim_set_hl(0, "GitSignsAddNr", { fg = colors.green, bold = true })
+        vim.api.nvim_set_hl(0, "GitSignsChangeNr", { fg = colors.yellow, bold = true })
+        vim.api.nvim_set_hl(0, "GitSignsDeleteNr", { fg = colors.red, bold = true })
+        vim.api.nvim_set_hl(0, "GitSignsTopdeleteNr", { fg = colors.red, bold = true })
+        vim.api.nvim_set_hl(0, "GitSignsChangedeleteNr", { fg = colors.yellow, bold = true })
+        vim.api.nvim_set_hl(0, "GitSignsUntrackedNr", { fg = colors.green, bold = true })
+
+        -- 3. Full-Line Background Shading (linehl)
+        -- Uses low-intensity hex shades to maximize content legibility
+        vim.api.nvim_set_hl(0, "GitSignsAddLn", { bg = "#2d3f34" })
+        vim.api.nvim_set_hl(0, "GitSignsChangeLn", { bg = "#413f30" })
+        vim.api.nvim_set_hl(0, "GitSignsDeleteLn", { bg = "#43242a" })
+        vim.api.nvim_set_hl(0, "GitSignsTopdeleteLn", { bg = "#43242a" })
+        vim.api.nvim_set_hl(0, "GitSignsChangedeleteLn", { bg = "#413f30" })
+        vim.api.nvim_set_hl(0, "GitSignsUntrackedLn", { bg = "#2d3f34" })
+      end
+    end,
   },
+
+  -- ── Git Monolithic Command Utility ───────────────────────────────────────
   {
     "tpope/vim-fugitive",
     cmd = {
-      "Git", "G", "Gdiffsplit", "Gread", "Gwrite", "Ggrep",
-      "GMove", "GDelete", "GBrowse", "GRemove", "GRename", "Glgrep", "Gedit",
+      "Git",
+      "G",
+      "Gdiffsplit",
+      "Gread",
+      "Gwrite",
+      "Ggrep",
+      "GMove",
+      "GDelete",
+      "GBrowse",
+      "GRemove",
+      "GRename",
+      "Glgrep",
+      "Gedit",
     },
     keys = { { "<leader>gs", "<cmd>Git<cr>", desc = "Git status" } },
   },
-  {
-    "sindrets/diffview.nvim",
-    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewRefresh" },
-    dependencies = { "nvim-lua/plenary.nvim" },
-    keys = {
-      { "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Diffview open" },
-      { "<leader>gD", "<cmd>DiffviewClose<cr>", desc = "Diffview close" },
-    },
-    opts = {
-      enhanced_diff_hl = true,
-      view = {
-        default = { layout = "diff2_horizontal", winbar_info = true },
-      },
-    },
-  },
 }
-
 ```
 
 ### `lua/plugins/markdown.lua`
