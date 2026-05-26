@@ -1004,42 +1004,36 @@ return {
 - [ ] TODO
 
 ```lua
--- ── Palette guard ─────────────────────────────────────────────────────────────
--- theme.lua sets _G.colors with priority = 1000, lazy = false, so it is always
--- loaded before this file.  This guard is a safety-net fallback only.
-if not _G.colors then
-	vim.notify(
-		"[markdown.lua] _G.colors not set — did theme.lua load first?\n"
-			.. "Expected: priority = 1000, lazy = false in theme.lua.",
-		vim.log.levels.WARN
-	)
-	_G.colors = {} -- nil fg/bg values are silently ignored by nvim_set_hl
-end
-
-local c = _G.colors -- local alias; avoids repeated _G lookups everywhere
+-- lua/plugins/markdown.lua
 
 -- ── Highlight Definitions ─────────────────────────────────────────────────────
--- Applied once at startup, then re-applied on every ColorScheme event so that
--- :colorscheme swaps never clobber these groups.
--- default = true means we yield to the colorscheme when it defines the group
--- itself, and only step in when the group is otherwise undefined.
-
+-- Safely queries Catppuccin's native module at runtime when applied or re-applied
+-- on ColorScheme events, completely eliminating global variable dependencies.
 local function define_highlights()
+	local has_catppuccin, cp_palettes = pcall(require, "catppuccin.palettes")
+	if not has_catppuccin then
+		return
+	end
+
+	local c = cp_palettes.get_palette("mocha") or {}
+	if next(c) == nil then
+		return
+	end
+
 	local hl = function(name, opts)
-		opts.default = true
+		opts.default = true -- yield to colorscheme if it defines the group itself
 		vim.api.nvim_set_hl(0, name, opts)
 	end
 
 	-- ── Heading foregrounds ──────────────────────────────────────────────────
-	hl("RenderMarkdownH1", { fg = c.red,      bold = true })
-	hl("RenderMarkdownH2", { fg = c.peach,    bold = true })
-	hl("RenderMarkdownH3", { fg = c.yellow,   bold = true })
-	hl("RenderMarkdownH4", { fg = c.green,    bold = true })
-	hl("RenderMarkdownH5", { fg = c.sky,      bold = true })
+	hl("RenderMarkdownH1", { fg = c.red, bold = true })
+	hl("RenderMarkdownH2", { fg = c.peach, bold = true })
+	hl("RenderMarkdownH3", { fg = c.yellow, bold = true })
+	hl("RenderMarkdownH4", { fg = c.green, bold = true })
+	hl("RenderMarkdownH5", { fg = c.sky, bold = true })
 	hl("RenderMarkdownH6", { fg = c.lavender, bold = true })
 
 	-- ── Heading backgrounds — dark tints crafted from each foreground ────────
-	-- Not in _G.colors because they are render-markdown-specific blends.
 	hl("RenderMarkdownH1Bg", { bg = "#32202a" }) -- dark rose tint
 	hl("RenderMarkdownH2Bg", { bg = "#2e2018" }) -- dark peach tint
 	hl("RenderMarkdownH3Bg", { bg = "#2d2914" }) -- dark yellow tint
@@ -1048,8 +1042,8 @@ local function define_highlights()
 	hl("RenderMarkdownH6Bg", { bg = "#1d1d30" }) -- dark lavender tint
 
 	-- ── Code blocks ──────────────────────────────────────────────────────────
-	hl("RenderMarkdownCode",       { bg = c.mantle })             -- block fill (slightly darker than base)
-	hl("RenderMarkdownCodeBorder", { fg = c.surface2 })           -- ▄/▀ cap chars (more visible than surface1)
+	hl("RenderMarkdownCode", { bg = c.mantle }) -- block fill (slightly darker than base)
+	hl("RenderMarkdownCodeBorder", { fg = c.surface2 }) -- ▄/▀ cap chars (more visible than surface1)
 	hl("RenderMarkdownCodeInline", { bg = c.surface1, fg = c.mauve }) -- `inline` (mauve pops on surface1)
 
 	-- ── Horizontal rule ──────────────────────────────────────────────────────
@@ -1068,15 +1062,15 @@ local function define_highlights()
 
 	-- ── Tables ───────────────────────────────────────────────────────────────
 	hl("RenderMarkdownTableHead", { fg = c.sapphire, bold = true })
-	hl("RenderMarkdownTableRow",  { fg = c.text })
+	hl("RenderMarkdownTableRow", { fg = c.text })
 
 	-- ── Checkboxes ───────────────────────────────────────────────────────────
 	hl("RenderMarkdownUnchecked", { fg = c.overlay1 })
-	hl("RenderMarkdownChecked",   { fg = c.green })
-	hl("RenderMarkdownTodo",      { fg = c.yellow })
+	hl("RenderMarkdownChecked", { fg = c.green })
+	hl("RenderMarkdownTodo", { fg = c.yellow })
 
 	-- ── Links ────────────────────────────────────────────────────────────────
-	hl("RenderMarkdownLink",     { fg = c.sky,  underline = true })
+	hl("RenderMarkdownLink", { fg = c.sky, underline = true })
 	hl("RenderMarkdownWikiLink", { fg = c.teal, underline = true }) -- [[wiki]] links
 
 	-- ── Sign column ──────────────────────────────────────────────────────────
@@ -1086,70 +1080,62 @@ local function define_highlights()
 	hl("RenderMarkdownInlineHighlight", { bg = c.surface1, fg = c.peach })
 
 	-- ── Callout severity colours ─────────────────────────────────────────────
-	-- Defined here so callout entries can reference them by name rather than
-	-- relying on DiagnosticOk (not styled by all colorschemes) or raw colours.
 	hl("RenderMarkdownSuccess", { fg = c.green })
-	hl("RenderMarkdownHint",    { fg = c.teal })
-	hl("RenderMarkdownInfo",    { fg = c.blue })
-	hl("RenderMarkdownWarn",    { fg = c.yellow })
-	hl("RenderMarkdownError",   { fg = c.red })
+	hl("RenderMarkdownHint", { fg = c.teal })
+	hl("RenderMarkdownInfo", { fg = c.blue })
+	hl("RenderMarkdownWarn", { fg = c.yellow })
+	hl("RenderMarkdownError", { fg = c.red })
 end
 
+-- Establish baseline highlights and hook into future layout refreshes
 define_highlights()
 vim.api.nvim_create_autocmd("ColorScheme", { callback = define_highlights })
 
 -- ── Automated Buffer Setup ────────────────────────────────────────────────────
--- Two separate autocmd registrations (FileType vs BufRead/BufNewFile) because:
---   FileType uses filetype names ("markdown"), NOT file-path globs.
---   BufRead/BufNewFile use file-path globs ("*.md"), NOT filetype names.
--- Mixing them in one autocmd with both patterns produces silently dead entries.
-
 local function setup_markdown_buffer()
 	-- ── Display options ───────────────────────────────────────────────────────
-	vim.opt_local.conceallevel = 2      -- hide markup; required by render-markdown
-	vim.opt_local.concealcursor = "nc"  -- keep conceal in Normal+Cmd; reveal in Insert
-	vim.opt_local.wrap        = true
-	vim.opt_local.linebreak   = true    -- wrap at word boundaries
-	vim.opt_local.breakindent = true    -- wrapped lines keep parent indent
-	vim.opt_local.showbreak   = "  "    -- 2-space leader on continuation lines
-	vim.opt_local.spell       = true
-	vim.opt_local.spelllang   = "en_us"
+	vim.opt_local.conceallevel = 2 -- hide markup; required by render-markdown
+	vim.opt_local.concealcursor = "nc" -- keep conceal in Normal+Cmd; reveal in Insert
+	vim.opt_local.wrap = true
+	vim.opt_local.linebreak = true -- wrap at word boundaries
+	vim.opt_local.breakindent = true -- wrapped lines keep parent indent
+	vim.opt_local.showbreak = "  " -- 2-space leader on continuation lines
+	vim.opt_local.spell = true
+	vim.opt_local.spelllang = "en_us"
 
-	-- ── Bold autopair  **|**  ────────────────────────────────────────────────
-	-- mini.pairs only handles single-character open/close symbols.
-	-- "**" (bold) and "__" (italic) are multi-char and must be raw keymaps.
-	vim.keymap.set("i", "**", "****<Left><Left>",
-		{ buffer = true, silent = true, desc = "Markdown: bold pair **|**" })
+	-- ── Bold autopair  **|** ────────────────────────────────────────────────
+	vim.keymap.set("i", "**", "****<Left><Left>", { buffer = true, silent = true, desc = "Markdown: bold pair **|**" })
 
 	-- ── Italic autopair  __|__  ──────────────────────────────────────────────
-	vim.keymap.set("i", "__", "____<Left><Left>",
-		{ buffer = true, silent = true, desc = "Markdown: italic pair __|__" })
+	vim.keymap.set(
+		"i",
+		"__",
+		"____<Left><Left>",
+		{ buffer = true, silent = true, desc = "Markdown: italic pair __|__" }
+	)
 
 	-- ── Horizontal rule  ---<CR>  ─────────────────────────────────────────────
-	-- Intentionally three chars: a single "-" would break list-item creation.
-	vim.keymap.set("i", "---", "---<CR>",
-		{ buffer = true, silent = true, desc = "Markdown: horizontal rule + newline" })
+	vim.keymap.set(
+		"i",
+		"---",
+		"---<CR>",
+		{ buffer = true, silent = true, desc = "Markdown: horizontal rule + newline" }
+	)
 
 	-- ── mini.pairs: markdown-specific buffer pairs ────────────────────────────
-	-- Standard pairs ((, [, {, ", ', `) are handled globally by mini.pairs.
-	-- * and _ are intentionally NOT mapped here — the raw keymaps above own
-	-- "**" bold and "__" italic (mini.pairs can't do multi-char pairs, so
-	-- mapping "*" as closeopen would conflict with the ** keymap above).
-	-- We only add "$" for inline LaTeX math.
 	local ok, _ = pcall(require, "mini.pairs")
 	if ok and MiniPairs then
 		MiniPairs.map_buf(0, "i", "$", {
-			action  = "closeopen",
-			pair    = "$$",
+			action = "closeopen",
+			pair = "$$",
 			register = { cr = false }, -- $...$ math blocks don't expand on <CR>
 		})
 	end
 
 	-- ── Non-destructive .markdownlint-cli2.yaml creation ─────────────────────
-	-- Written once per directory; never overwrites an existing file.
 	local buf_name = vim.api.nvim_buf_get_name(0)
 	if buf_name ~= "" then
-		local dir         = vim.fn.fnamemodify(buf_name, ":h")
+		local dir = vim.fn.fnamemodify(buf_name, ":h")
 		local config_path = dir .. "/.markdownlint-cli2.yaml"
 
 		if not vim.uv.fs_stat(config_path) then
@@ -1171,12 +1157,12 @@ config:
 end
 
 vim.api.nvim_create_autocmd("FileType", {
-	pattern  = "markdown",       -- filetype NAME, not glob
+	pattern = "markdown", -- filetype NAME, not glob
 	callback = setup_markdown_buffer,
 })
 
 vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
-	pattern  = { "*.md", "*.markdown" }, -- file-path GLOBS, not filetype names
+	pattern = { "*.md", "*.markdown" }, -- file-path GLOBS, not filetype names
 	callback = setup_markdown_buffer,
 })
 
@@ -1191,120 +1177,102 @@ return {
 		dependencies = {
 			"nvim-tree/nvim-web-devicons",
 		},
-		ft   = { "markdown" },
+		ft = { "markdown" },
 		opts = {
-
-			-- Render in Normal + Command mode; Insert/Visual show raw source so
-			-- editing is never obscured by virtual-text overlays.
 			render_modes = { "n", "c" },
-
-			-- Expose marksman / other LSP completions inline in markdown buffers.
 			completions = { lsp = { enabled = true } },
 
-			-- Anti-conceal: reveal raw source on the cursor line, with one line
-			-- of buffer above and below for smooth visual transitions.
 			anti_conceal = {
-				enabled        = true,
-				above          = 1,
-				below          = 1,
-				-- These elements are kept visible even on the cursor line because
-				-- they don't obscure editability and look cleaner always-on.
+				enabled = true,
+				above = 1,
+				below = 1,
 				ignore = {
 					code_background = true,
-					indent          = true,
-					sign            = true,
+					indent = true,
+					sign = true,
 				},
 			},
 
-			-- Padding highlight blends with Normal so heading/code left margins
-			-- don't produce stray coloured strips in the gutter.
 			padding = { highlight = "Normal" },
 
-			-- Window options toggled when entering/leaving rendered view.
-			-- Required for quote.repeat_linebreak and proper wrap behaviour.
 			win_options = {
-				showbreak    = { default = "",    rendered = "  " },
-				breakindent  = { default = false, rendered = true  },
+				showbreak = { default = "", rendered = "  " },
+				breakindent = { default = false, rendered = true },
 				breakindentopt = { default = "", rendered = "" },
 			},
 
 			-- ── Headings ──────────────────────────────────────────────────────
 			heading = {
-				enabled      = true,
-				render_modes = false, -- follow global render_modes list above
-				atx          = true,  -- ATX headings:    # H1 ## H2 etc.
-				setext       = true,  -- Setext headings: underline === / ---
-				sign         = true,
-
-				-- nf-md-alpha_N_box icon set (Nerd Font ≥ 3.x)
-				icons  = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
-				signs  = { "󰫎 " }, -- single sign-column marker, cycles across levels
-
-				-- "overlay": icon left-pads to replace # markers, keeping visual
-				-- alignment independent of heading depth.
+				enabled = true,
+				render_modes = false,
+				atx = true,
+				setext = true,
+				sign = true,
+				icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
+				signs = { "󰫎 " },
 				position = "overlay",
-				width    = "full", -- full-width coloured background bar
-
-				-- ▄/▀ half-block caps above and below each heading.
-				-- border_virtual = true draws them as virtual lines (no real lines consumed).
-				-- border_prefix  = true extends the caps behind the icon glyph.
-				border         = true,
+				width = "full",
+				border = true,
 				border_virtual = true,
-				border_prefix  = true,
+				border_prefix = true,
 				above = "▄",
 				below = "▀",
-
 				backgrounds = {
-					"RenderMarkdownH1Bg", "RenderMarkdownH2Bg", "RenderMarkdownH3Bg",
-					"RenderMarkdownH4Bg", "RenderMarkdownH5Bg", "RenderMarkdownH6Bg",
+					"RenderMarkdownH1Bg",
+					"RenderMarkdownH2Bg",
+					"RenderMarkdownH3Bg",
+					"RenderMarkdownH4Bg",
+					"RenderMarkdownH5Bg",
+					"RenderMarkdownH6Bg",
 				},
 				foregrounds = {
-					"RenderMarkdownH1", "RenderMarkdownH2", "RenderMarkdownH3",
-					"RenderMarkdownH4", "RenderMarkdownH5", "RenderMarkdownH6",
+					"RenderMarkdownH1",
+					"RenderMarkdownH2",
+					"RenderMarkdownH3",
+					"RenderMarkdownH4",
+					"RenderMarkdownH5",
+					"RenderMarkdownH6",
 				},
 			},
 
 			-- ── Org-style body indentation ────────────────────────────────────
-			-- Indents body text 2 spaces per heading level (org-indent-mode).
-			-- Works together with heading borders to express document hierarchy.
 			indent = {
-				enabled      = true,
-				per_level    = 2,
-				skip_level   = 1,
+				enabled = true,
+				per_level = 2,
+				skip_level = 1,
 				skip_heading = false,
 			},
 
 			-- ── Code blocks ───────────────────────────────────────────────────
 			code = {
-				enabled   = true,
-				sign      = true,
-				style     = "full",   -- highlight entire block width
-				width     = "block",  -- clip background to content width + padding
-				border    = "thick",  -- thick ▄/▀ cap effect above and below block
-				above     = "▄",
-				below     = "▀",
-				left_pad  = 2,
+				enabled = true,
+				sign = true,
+				style = "full",
+				width = "block",
+				border = "thick",
+				above = "▄",
+				below = "▀",
+				left_pad = 2,
 				right_pad = 4,
-				language_name = true, -- display "lua", "python", etc. beside the icon
-				highlight        = "RenderMarkdownCode",
+				language_name = true,
+				highlight = "RenderMarkdownCode",
 				highlight_border = "RenderMarkdownCodeBorder",
 				highlight_inline = "RenderMarkdownCodeInline",
 			},
 
 			-- ── Horizontal rule ───────────────────────────────────────────────
 			dash = {
-				enabled   = true,
-				icon      = "─",
-				width     = "full",
+				enabled = true,
+				icon = "─",
+				width = "full",
 				highlight = "RenderMarkdownDash",
 			},
 
 			-- ── List bullets — 4-level cycling ───────────────────────────────
-			-- filled circle → hollow circle → filled diamond → hollow diamond
 			bullet = {
-				enabled   = true,
-				icons     = { "●", "○", "◆", "◇" },
-				left_pad  = 0,
+				enabled = true,
+				icons = { "●", "○", "◆", "◇" },
+				left_pad = 0,
 				right_pad = 1,
 				highlight = "RenderMarkdownBullet",
 			},
@@ -1313,133 +1281,114 @@ return {
 			checkbox = {
 				enabled = true,
 				unchecked = {
-					icon      = "󰄱 ",  -- nf-md-checkbox_blank_outline
+					icon = "󰄱 ",
 					highlight = "RenderMarkdownUnchecked",
 				},
 				checked = {
-					icon      = "󰱒 ",  -- nf-md-checkbox_marked (solid filled)
+					icon = "󰱒 ",
 					highlight = "RenderMarkdownChecked",
 				},
 				custom = {
-					-- [-] → in-progress / todo (clock icon)
 					todo = { raw = "[-]", rendered = "󰥔 ", highlight = "RenderMarkdownTodo" },
 				},
 			},
 
 			-- ── Block quotes ──────────────────────────────────────────────────
 			quote = {
-				enabled         = true,
-				icon            = "▋",
-				-- Repeat the bar glyph on soft-wrapped continuation lines.
-				-- Requires win_options: showbreak + breakindent (set above).
+				enabled = true,
+				icon = "▋",
 				repeat_linebreak = true,
 				highlight = {
-					"RenderMarkdownQuote1", "RenderMarkdownQuote2",
-					"RenderMarkdownQuote3", "RenderMarkdownQuote4",
-					"RenderMarkdownQuote5", "RenderMarkdownQuote6",
+					"RenderMarkdownQuote1",
+					"RenderMarkdownQuote2",
+					"RenderMarkdownQuote3",
+					"RenderMarkdownQuote4",
+					"RenderMarkdownQuote5",
+					"RenderMarkdownQuote6",
 				},
 			},
 
 			-- ── Callouts (GitHub / Obsidian style) ────────────────────────────
-			-- Highlight groups are defined in define_highlights() above so they
-			-- always use the active palette rather than hardcoded colours.
 			callout = {
-				-- ── GitHub built-ins ─────────────────────────────────────────
-				note      = { raw = "[!NOTE]",      rendered = "󰋽 Note",      highlight = "RenderMarkdownInfo"    },
-				tip       = { raw = "[!TIP]",       rendered = "󰌶 Tip",       highlight = "RenderMarkdownSuccess" },
-				important = { raw = "[!IMPORTANT]", rendered = "󰅾 Important", highlight = "RenderMarkdownHint"    },
-				warning   = { raw = "[!WARNING]",   rendered = "󰀪 Warning",   highlight = "RenderMarkdownWarn"    },
-				caution   = { raw = "[!CAUTION]",   rendered = "󰳦 Caution",   highlight = "RenderMarkdownError"   },
-				-- ── Extended Obsidian-style callouts ─────────────────────────
-				abstract  = { raw = "[!ABSTRACT]",  rendered = "󰨸 Abstract",  highlight = "RenderMarkdownInfo"    },
-				info      = { raw = "[!INFO]",      rendered = "󰋽 Info",      highlight = "RenderMarkdownInfo"    },
-				todo      = { raw = "[!TODO]",      rendered = "󰗡 Todo",      highlight = "RenderMarkdownInfo"    },
-				hint      = { raw = "[!HINT]",      rendered = "󰴓 Hint",      highlight = "RenderMarkdownHint"    },
-				success   = { raw = "[!SUCCESS]",   rendered = "󰄬 Success",   highlight = "RenderMarkdownSuccess" },
-				question  = { raw = "[!QUESTION]",  rendered = "󰘥 Question",  highlight = "RenderMarkdownWarn"    },
-				bug       = { raw = "[!BUG]",       rendered = "󰨰 Bug",       highlight = "RenderMarkdownError"   },
-				example   = { raw = "[!EXAMPLE]",   rendered = "󰉹 Example",   highlight = "RenderMarkdownHint"    },
-				quote     = { raw = "[!QUOTE]",     rendered = "󱆨 Quote",     highlight = "RenderMarkdownQuote1"  },
+				note = { raw = "[!NOTE]", rendered = "󰋽 Note", highlight = "RenderMarkdownInfo" },
+				tip = { raw = "[!TIP]", rendered = "󰌶 Tip", highlight = "RenderMarkdownSuccess" },
+				important = { raw = "[!IMPORTANT]", rendered = "󰅾 Important", highlight = "RenderMarkdownHint" },
+				warning = { raw = "[!WARNING]", rendered = "󰀪 Warning", highlight = "RenderMarkdownWarn" },
+				caution = { raw = "[!CAUTION]", rendered = "󰳦 Caution", highlight = "RenderMarkdownError" },
+				abstract = { raw = "[!ABSTRACT]", rendered = "󰨸 Abstract", highlight = "RenderMarkdownInfo" },
+				info = { raw = "[!INFO]", rendered = "󰋽 Info", highlight = "RenderMarkdownInfo" },
+				todo = { raw = "[!TODO]", rendered = "󰗡 Todo", highlight = "RenderMarkdownInfo" },
+				hint = { raw = "[!HINT]", rendered = "󰴓 Hint", highlight = "RenderMarkdownHint" },
+				success = { raw = "[!SUCCESS]", rendered = "󰄬 Success", highlight = "RenderMarkdownSuccess" },
+				question = { raw = "[!QUESTION]", rendered = "󰘥 Question", highlight = "RenderMarkdownWarn" },
+				bug = { raw = "[!BUG]", rendered = "󰨰 Bug", highlight = "RenderMarkdownError" },
+				example = { raw = "[!EXAMPLE]", rendered = "󰉹 Example", highlight = "RenderMarkdownHint" },
+				quote = { raw = "[!QUOTE]", rendered = "󱆨 Quote", highlight = "RenderMarkdownQuote1" },
 			},
 
 			-- ── Tables ────────────────────────────────────────────────────────
-			-- API changes in recent releases (2024–2025):
-			--   • border        is now an explicit 11-element array (not a string preset).
-			--   • border_enabled controls whether borders are drawn at all.
-			--   • border_virtual keeps border virtual-lines off real file lines.
-			--   • padding / min_width  are new padding/minimum-width options.
-			--   • preset        still works as a shorthand (overrides border[]).
-			-- We set preset = "none" and supply the border array explicitly for
-			-- full control and easy future customisation.
 			pipe_table = {
-				enabled      = true,
-				render_modes = false, -- follow global render_modes
-
-				-- Round-corner box-drawing borders:
-				--   top row:    ╭ ┬ ╮
-				--   middle row: ├ ┼ ┤
-				--   bottom row: ╰ ┴ ╯
-				--   edges:      │  ─
-				preset = "none", -- explicit border array below takes full precedence
+				enabled = true,
+				render_modes = false,
+				preset = "none",
 				border = {
-					"╭", "┬", "╮",
-					"├", "┼", "┤",
-					"╰", "┴", "╯",
-					"│", "─",
+					"╭",
+					"┬",
+					"╮",
+					"├",
+					"┼",
+					"┤",
+					"╰",
+					"┴",
+					"╯",
+					"│",
+					"─",
 				},
 				border_enabled = true,
-				border_virtual = false, -- physical lines; plays nicer with folds
-
-				cell            = "padded", -- auto-align columns with inline extmarks
-				padding         = 1,        -- spaces of padding per cell side
-				min_width       = 0,        -- no forced minimum column width
-				alignment_indicator = "━",  -- heavy horizontal bar in delimiter row
-
-				head  = "RenderMarkdownTableHead",
-				row   = "RenderMarkdownTableRow",
-				style = "full", -- "full": add top + bottom border lines
+				border_virtual = false,
+				cell = "padded",
+				padding = 1,
+				min_width = 0,
+				alignment_indicator = "━",
+				head = "RenderMarkdownTableHead",
+				row = "RenderMarkdownTableRow",
+				style = "full",
 			},
 
 			-- ── Links ─────────────────────────────────────────────────────────
-			-- "footnote", "wiki" are newer fields added in 2024–2025 releases.
 			link = {
-				enabled   = true,
-				-- Footnotes: render superscript number after the caret
-				footnote  = { superscript = true, prefix = "", suffix = "" },
-				-- Per-type icons
-				image     = "󰋩 ", -- nf-md-image
-				email     = "󰀓 ", -- nf-md-email
-				hyperlink = "󰌹 ", -- nf-md-link_variant
+				enabled = true,
+				footnote = { superscript = true, prefix = "", suffix = "" },
+				image = "󰋩 ",
+				email = "󰀓 ",
+				hyperlink = "󰌹 ",
 				highlight = "RenderMarkdownLink",
 				wiki = {
-					icon      = "󱗖 ", -- nf-md-notebook_outline
+					icon = "󱗖 ",
 					highlight = "RenderMarkdownWikiLink",
 				},
 			},
 
 			-- ── Sign column ───────────────────────────────────────────────────
 			sign = {
-				enabled   = true,
+				enabled = true,
 				highlight = "RenderMarkdownSign",
 			},
 
 			-- ── Inline highlight (==text==) ───────────────────────────────────
 			inline_highlight = {
-				enabled   = true,
+				enabled = true,
 				highlight = "RenderMarkdownInlineHighlight",
 			},
 
 			-- ── nofile buftype override ───────────────────────────────────────
-			-- LSP hover docs, Telescope previews, and other scratch floats:
-			-- always render regardless of mode, no sign column, no padding that
-			-- causes wraps in narrow panes.
 			overrides = {
 				buftype = {
 					nofile = {
-						render_modes = true, -- true = all modes
-						padding      = { highlight = "NormalFloat" },
-						sign         = { enabled = false },
-						code         = { left_pad = 0, right_pad = 0 },
+						render_modes = true,
+						padding = { highlight = "NormalFloat" },
+						sign = { enabled = false },
+						code = { left_pad = 0, right_pad = 0 },
 					},
 				},
 			},
@@ -1452,29 +1401,27 @@ return {
 	---------------------------------------------------------------------------
 	{
 		"toppair/peek.nvim",
-		ft    = { "markdown" },
+		ft = { "markdown" },
 		build = "deno task --quiet build:fast",
 
 		config = function()
 			require("peek").setup({
-				auto_load        = false,      -- open explicitly with <leader>mp
-				close_on_bdelete = true,       -- close when the source buffer closes
-				syntax           = true,       -- syntax highlighting (~5 ms overhead)
-				theme            = "dark",     -- matches Catppuccin Mocha
-				update_on_change = true,       -- live-update while typing
-				app              = "webview",  -- no external browser; use "browser" on Wayland for better CSS
-				filetype         = { "markdown" },
-				throttle_at   = 200000,        -- start throttling beyond ~200 KB
+				auto_load = false,
+				close_on_bdelete = true,
+				syntax = true,
+				theme = "dark",
+				update_on_change = true,
+				app = "webview",
+				filetype = { "markdown" },
+				throttle_at = 200000,
 				throttle_time = "auto",
 			})
 
-			-- User commands for tooling / keymaps that call them directly
-			vim.api.nvim_create_user_command("PeekOpen",  require("peek").open,  {})
+			vim.api.nvim_create_user_command("PeekOpen", require("peek").open, {})
 			vim.api.nvim_create_user_command("PeekClose", require("peek").close, {})
 		end,
 
 		keys = {
-			-- Single toggle: opens if closed, closes if open.
 			{
 				"<leader>mp",
 				function()
@@ -1485,7 +1432,7 @@ return {
 						peek.open()
 					end
 				end,
-				ft   = "markdown",
+				ft = "markdown",
 				desc = "Markdown: Toggle Peek Preview",
 			},
 		},
