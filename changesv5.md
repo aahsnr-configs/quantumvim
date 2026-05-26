@@ -77,6 +77,8 @@ require("lazy").setup({
 
 ### `lua/core/options.lua`
 
+- [ ] TODO
+
 ```lua
 -- ── UI & View Layer ────────────────────────────────────────────────────────
 vim.opt.number = true            -- Surface the absolute current line number
@@ -142,6 +144,8 @@ vim.opt.fileencoding = "utf-8"   -- Guarantee default unicode serialization
 
 ### `lua/core/keymaps.lua`
 
+- [ ] TODO
+
 ```lua
 local map = vim.keymap.set
 
@@ -194,6 +198,8 @@ map("n", "<leader>nh", "<cmd>nohlsearch<cr>", { desc = "Clear search highlights"
 ```
 
 ### `lua/core/autocmds.lua`
+
+- [ ] TODO
 
 ```lua
 vim.g.autoformat = true -- Global configuration toggle state verified by conform.nvim
@@ -287,100 +293,67 @@ autocmd("TermOpen", {
 
 ### `lua/plugins/theme.lua`
 
+- [x] TODO: Determine how other files will access the global variable. Ask claude whether the code is correct.
+
 ```lua
--- ── Global Color Palette Definition ────────────────────────────────────────
--- These variables are available globally across your entire Neovim configuration.
--- Currently configured with Catppuccin Mocha hex values.
-_G.colors = {
-  rosewater = "#f5e0dc",
-  flamingo  = "#f2cdcd",
-  pink      = "#f5c2e7",
-  mauve     = "#cba6f7",
-  red       = "#f38ba8",
-  maroon    = "#eba0ac",
-  peach     = "#fab387",
-  yellow    = "#f9e2af",
-  green     = "#a6e3a1",
-  teal      = "#94e2d5",
-  sky       = "#89dceb",
-  sapphire  = "#74c7ec",
-  blue      = "#89b4fa",
-  lavender  = "#b4befe",
-  text      = "#cdd6f4",
-  subtext1  = "#bac2de",
-  subtext0  = "#a6adc8",
-  overlay2  = "#9399b2",
-  overlay1  = "#7f849c",
-  overlay0  = "#6c7086",
-  surface2  = "#585b70",
-  surface1  = "#45475a",
-  surface0  = "#313244",
-  base      = "#1e1e2e",
-  mantle    = "#181825",
-  crust     = "#11111b",
-  none      = "NONE",
-}
-
--- 💡 HOW TO ADD / CHANGE THEMES IN THE FUTURE:
--- 1. Replace the hex values in the `_G.colors` table above with your new theme's palette.
--- 2. Swap out the plugin repository string below (e.g., "folke/tokyonight.nvim")
---    and adjust its setup block accordingly.
-
+-- lua/plugins/theme.lua
 return {
-  {
-    "catppuccin/nvim",
-    name = "catppuccin",
-    priority = 1000, -- High priority ensures it loads before other plugins
-    lazy = false,
-    config = function()
-      require("catppuccin").setup({
-        flavour = "mocha",
-        transparent_background = false,
-        highlight_overrides = {
-          mocha = function(cols)
-            return {
-              GitSignsAdd    = { fg = cols.green, bg = cols.none },
-              GitSignsChange = { fg = cols.yellow, bg = cols.none },
-              GitSignsDelete = { fg = cols.red, bg = cols.none },
-            }
-          end,
-        },
-        integrations = {
-          blink_cmp        = true,
-          noice            = true,
-          notify           = true,
-          gitsigns         = true,
-          telescope        = true,
-          treesitter       = true,
-          illuminate       = true,
-          flash            = true,
-          neotree          = true,
-          snacks           = { enabled = true },
-          lualine          = true,
-          bufferline       = true,
-          indent_blankline = { enabled = true, colored_indent_levels = false },
-          mini             = { enabled = true, indentscope_color = "" },
-          dropbar          = { enabled = true, color_mode = false },
-        },
-      })
+	{
+		"catppuccin/nvim",
+		name = "catppuccin",
+		priority = 1000, -- High priority ensures it loads before other plugins
+		lazy = false,
+		config = function()
+			require("catppuccin").setup({
+				flavour = "mocha",
+				transparent_background = false,
+				highlight_overrides = {
+					mocha = function(cols)
+						return {
+							GitSignsAdd = { fg = cols.green, bg = cols.none },
+							GitSignsChange = { fg = cols.yellow, bg = cols.none },
+							GitSignsDelete = { fg = cols.red, bg = cols.none },
+						}
+					end,
+				},
+				integrations = {
+					blink_cmp = true,
+					noice = true,
+					notify = true,
+					gitsigns = true,
+					telescope = true,
+					treesitter = true,
+					illuminate = true,
+					flash = true,
+					neotree = true,
+					snacks = { enabled = true },
+					lualine = true,
+					bufferline = true,
+					indent_blankline = { enabled = true, colored_indent_levels = false },
+					mini = { enabled = true, indentscope_color = "" },
+					dropbar = { enabled = true, color_mode = false },
+				},
+			})
 
-      -- Apply the colorscheme
-      vim.cmd.colorscheme("catppuccin")
-    end,
-  },
+			-- Apply the colorscheme
+			vim.cmd.colorscheme("catppuccin")
+		end,
+	},
 }
 
 ```
 
 ### `lua/plugins/ui.lua`
 
+- [ ] TODO
+
 ```lua
 return {
   -- ── UI Notifications ───────────────────────────────────────────────────
   {
     "rcarriga/nvim-notify",
-    opts = {
-      timeout = 3000,
+      opts = {
+      timeout = 1000,
       max_height = function() return math.floor(vim.o.lines * 0.75) end,
       max_width = function() return math.floor(vim.o.columns * 0.75) end,
       render = "compact",
@@ -464,588 +437,1277 @@ return {
 }
 ```
 
-### `lua/plugins/completion.lua`
+### `lua/plugins/development.lua`
+
+- [x] DONE
 
 ```lua
 return {
-  "saghen/blink.cmp",
-  -- Tracks version 2 development directly from the main branch
-  branch = "main",
-  event = { "InsertEnter", "CmdlineEnter" },
-  dependencies = {
-    -- Co-located here with lazy=true to eliminate the redundant top-level array table
-    { "rafamadriz/friendly-snippets", lazy = true },
-  },
-  opts = {
-    fuzzy = { implementation = "prefer_rust_with_warning" },
+	-- ==========================================================================
+	-- 1. MASON PACKAGE MANAGEMENT & AUTOMATED TOOLING
+	-- ==========================================================================
+	{
+		"mason-org/mason.nvim",
+		config = true,
+		cmd = "Mason",
+		opts = {
+			ui = {
+				icons = {
+					package_installed = "✓",
+					package_pending = "➜",
+					package_uninstalled = "✗",
+				},
+			},
+		},
+	},
+	{
+		"mason-org/mason-lspconfig.nvim",
+		dependencies = {
+			"mason-org/mason.nvim",
+			"neovim/nvim-lspconfig",
+		},
+		opts = {
+			ensure_installed = {
+				"lua_ls",
+				"basedpyright",
+				"ts_ls",
+				"html",
+				"cssls",
+				"jsonls",
+				"gopls",
+				"rust_analyzer",
+				"bashls",
+				"marksman",
+				"texlab",
+			},
+			-- automatic_enable = true is the default in v2; no explicit flag needed.
+			-- Installed servers are automatically enabled via vim.lsp.enable().
+			-- NOTE: automatic_installation was removed in v2. Use ensure_installed instead.
+		},
+	},
+	{
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		dependencies = { "mason-org/mason.nvim" },
+		opts = {
+			ensure_installed = {
+				"stylua",
+				"ruff",
+				"prettierd",
+				"shfmt",
+				"gofumpt",
+				"goimports",
+				"selene",
+				"markdownlint-cli2",
+				"yamllint",
+				"jsonlint",
+				"latexindent",
+				"chktex",
+			},
+			auto_update = true,
+			run_on_start = true,
+		},
+	},
 
-    keymap = {
-      preset = "default",
-      -- Tab cycles forward through candidate selections seamlessly
-      ["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
-      -- Shift+Tab cycles backward up through candidate selections
-      ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
-      ["<C-b>"] = { "scroll_documentation_up", "fallback" },
-      ["<C-f>"] = { "scroll_documentation_down", "fallback" },
-    },
+	-- ==========================================================================
+	-- 2. COMPLETION ENGINE MODULE (BLINK.CMP & VISUAL EXTENSIONS)
+	-- ==========================================================================
+	{
+		"xzbdmw/colorful-menu.nvim",
+		opts = {},
+	},
+	{
+		"saghen/blink.cmp",
+		version = "1.*",
+		event = { "InsertEnter", "CmdlineEnter" },
+		dependencies = {
+			-- blink.lib removed: it is a V2-only dependency, not used in V1
+			"rafamadriz/friendly-snippets",
+			"xzbdmw/colorful-menu.nvim",
+			{ "saghen/blink.compat", opts = {} },
+			"kdheepak/cmp-latex-symbols",
+			"moyiz/blink-emoji.nvim",
+			"mikavilpas/blink-ripgrep.nvim",
+		},
+		build = "cargo build --release",
+		---@module 'blink.cmp'
+		---@type blink.cmp.Config
+		opts = {
+			enabled = function()
+				return vim.bo.buftype ~= "prompt" and vim.b.completion ~= false
+			end,
 
-    appearance = {
-      nerd_font_variant = "mono",
-    },
+			cmdline = { enabled = true },
 
-    completion = {
-      list = {
-        selection = {
-          preselect = false,
-          auto_insert = true,
-        },
-      },
-      documentation = {
-        auto_show = true,
-        auto_show_delay_ms = 200
-      },
-      menu = {
-        border = "rounded",
-        draw = {
-          columns = {
-            { "label", "label_description", gap = 1 },
-            { "kind_icon", "kind" },
-          },
-        },
-      },
-    },
+			keymap = {
+				preset = "default",
+				["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
+				["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
+				["<C-b>"] = { "scroll_documentation_up", "fallback" },
+				["<C-f>"] = { "scroll_documentation_down", "fallback" },
+				["<C-k>"] = { "show_signature", "hide_signature", "fallback" },
+				["<C-u>"] = { "scroll_signature_up", "fallback" },
+				["<C-d>"] = { "scroll_signature_down", "fallback" },
+			},
 
-    sources = {
-      default = { "lsp", "path", "snippets", "buffer" },
-      per_filetype = {
-        markdown = { "path", "snippets", "buffer" },
-        tex = { "lsp", "path", "snippets", "buffer" },
-        latex = { "lsp", "path", "snippets", "buffer" },
-        plaintex = { "lsp", "path", "snippets", "buffer" },
-      },
-      providers = {},
-    },
+			appearance = {
+				use_nvim_cmp_as_default = false,
+				nerd_font_variant = "mono",
+			},
 
-    signature = { enabled = true },
-  },
-}
+			completion = {
+				keyword = {
+					range = "full",
+				},
 
-```
+				accept = { auto_brackets = { enabled = false } },
 
-### `lua/plugins/lsp.lua`
+				list = {
+					selection = {
+						preselect = function(ctx)
+							return vim.bo.filetype ~= "markdown"
+						end,
+						auto_insert = true,
+					},
+				},
 
-```lua
-return {
-  {
-    "folke/lazydev.nvim",
-    ft = "lua",
-    opts = {
-      library = {
-        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
-      },
-    },
-  },
-  {
-    "saghen/blink.cmp",
-    optional = true,
-    opts = {
-      sources = {
-        per_filetype = {
-          lua = { inherit_defaults = true, "lazydev" },
-        },
-        providers = {
-          lazydev = {
-            name = "LazyDev",
-            module = "lazydev.integrations.blink",
-            score_offset = 100,
-          },
-        },
-      },
-    },
-  },
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      "williamboman/mason-lspconfig.nvim",
-      "j-hui/fidget.nvim",
-    },
-    config = function()
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(ev)
-          local bufnr = ev.buf
-          local map = function(keys, func, desc, extra_opts)
-            extra_opts = extra_opts or {}
-            extra_opts.buffer = bufnr
-            extra_opts.desc = "LSP: " .. desc
-            vim.keymap.set("n", keys, func, extra_opts)
-          end
+				ghost_text = { enabled = true },
+				documentation = { auto_show = true, auto_show_delay_ms = 200 },
 
-          map("gd", vim.lsp.buf.definition, "Go to Definition")
-          map("gr", vim.lsp.buf.references, "Go to References")
-          map("gI", vim.lsp.buf.implementation, "Go to Implementation")
-          map("<leader>cr", vim.lsp.buf.rename, "Rename Symbol")
-          map("<leader>ca", vim.lsp.buf.code_action, "Code Action", { mode = { "n", "v" } })
-          map("K", vim.lsp.buf.hover, "Hover Documentation")
-        end,
-      })
+				menu = {
+					border = "none",
+					draw = {
+						columns = {
+							{ "kind_icon" },
+							{ "label", gap = 1 },
+						},
+						components = {
+							label = {
+								text = function(ctx)
+									return require("colorful-menu").blink_components_text(ctx)
+								end,
+								highlight = function(ctx)
+									return require("colorful-menu").blink_components_highlight(ctx)
+								end,
+							},
+						},
+					},
+				},
+			},
 
-      local lspconfig = require("lspconfig")
-      local capabilities = require("blink.cmp").get_lsp_capabilities()
+			signature = { enabled = true },
 
-      local servers = {
-        lua_ls = {
-          settings = {
-            Lua = {
-              diagnostics = { globals = { "vim" } },
-              workspace = { checkThirdParty = false },
-              telemetry = { enabled = false },
-            },
-          },
-        },
-        basedpyright = {},
-        ts_ls = {},
-        html = {},
-        cssls = {},
-        jsonls = {},
-        gopls = {},
-        rust_analyzer = {},
-        bashls = {},
-        marksman = {},
-      }
+			fuzzy = {
+				implementation = "prefer_rust",
+				prebuilt_binaries = { download = false }, -- Strictly rely on native compilation architecture
+				sorts = { "score", "sort_text", "kind", "label" },
+			},
 
-      require("mason-lspconfig").setup_handlers({
-        function(server_name)
-          local server_opts = servers[server_name] or {}
-          server_opts.capabilities = capabilities
-          lspconfig[server_name].setup(server_opts)
-        end,
-      })
-    end,
-  },
-  {
-    "folke/trouble.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = { use_diagnostic_signs = false },
-    keys = {
-      { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
-      { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
-      { "<leader>cs", "<cmd>Trouble symbols toggle<cr>", desc = "Symbols (Trouble)" },
-      { "<leader>cl", "<cmd>Trouble lsp toggle<cr>", desc = "LSP (Trouble)" },
+			snippets = { preset = "default" },
 
-      {
-        "<leader>ce",
-        function()
-          vim.diagnostic.open_float({ scope = "cursor", severity = vim.diagnostic.severity.ERROR })
-        end,
-        desc = "Diagnostics: Describe Error at Cursor",
-      },
-      {
-        "<leader>xe",
-        "<cmd>Trouble diagnostics toggle filter.severity=ERROR<cr>",
-        desc = "Diagnostics: Toggle All Errors",
-      },
-      {
-        "<leader>cw",
-        function()
-          vim.diagnostic.open_float({ scope = "cursor", severity = vim.diagnostic.severity.WARN })
-        end,
-        desc = "Diagnostics: Describe Warning at Cursor",
-      },
-      {
-        "<leader>xw",
-        "<cmd>Trouble diagnostics toggle filter.severity=WARN<cr>",
-        desc = "Diagnostics: Toggle All Warnings",
-      },
-      {
-        "<leader>xd",
-        function()
-          vim.diagnostic.enable(not vim.diagnostic.is_enabled()) -- Hardened reactive global toggle logic
-        end,
-        desc = "Diagnostics: Global Toggle On/Off",
-      },
-    },
-  },
-}
+			sources = {
+				default = { "lsp", "path", "snippets", "buffer" },
+				per_filetype = {
+					-- Explicitly list all sources for lua; inherit_defaults is a V2 feature
+					lua = { "lsp", "path", "snippets", "buffer", "lazydev" },
+					markdown = { "lsp", "path", "snippets", "buffer", "latex_symbols", "emoji", "ripgrep" },
+					tex = { "lsp", "path", "snippets", "buffer", "latex_symbols", "emoji", "ripgrep" }, -- LaTeX Integrated Context Mining
+					plaintex = { "lsp", "path", "snippets", "buffer", "latex_symbols", "emoji", "ripgrep" }, -- LaTeX Integrated Context Mining
+				},
+				providers = {
+					lazydev = {
+						name = "LazyDev",
+						module = "lazydev.integrations.blink",
+						score_offset = 100,
+					},
+					latex_symbols = {
+						name = "latex_symbols",
+						module = "blink.compat.source",
+						score_offset = 2,
+					},
+					emoji = {
+						name = "Emoji",
+						module = "blink-emoji",
+						score_offset = 1,
+					},
+					ripgrep = {
+						name = "Ripgrep",
+						module = "blink-ripgrep",
+						score_offset = 0,
+					},
+				},
+			},
+		},
+	},
 
-```
+	-- ==========================================================================
+	-- 3. CORE LANGUAGE RUNTIMES & INTERFACES (LSP)
+	-- ==========================================================================
+	{
+		"folke/lazydev.nvim",
+		ft = "lua",
+		opts = {
+			library = {
+				{ path = "${3rd}/luv/library", words = { "vim%.uv" } },
+			},
+		},
+	},
+	{
+		"neovim/nvim-lspconfig",
+		dependencies = {
+			"mason-org/mason-lspconfig.nvim",
+			"j-hui/fidget.nvim",
+		},
+		config = function()
+			vim.api.nvim_create_autocmd("LspAttach", {
+				callback = function(ev)
+					local bufnr = ev.buf
+					local map = function(keys, func, desc, extra_opts)
+						extra_opts = extra_opts or {}
+						local mode = extra_opts.mode or "n"
+						extra_opts.mode = nil
+						extra_opts.buffer = bufnr
+						extra_opts.desc = "LSP: " .. desc
+						vim.keymap.set(mode, keys, func, extra_opts)
+					end
 
-### `lua/plugins/mason.lua`
+					map("gd", vim.lsp.buf.definition, "Go to Definition")
+					map("gr", vim.lsp.buf.references, "Go to References")
+					map("gI", vim.lsp.buf.implementation, "Go to Implementation")
+					map("<leader>cr", vim.lsp.buf.rename, "Rename Symbol")
+					map("<leader>ca", vim.lsp.buf.code_action, "Code Action", { mode = { "n", "v" } })
+					map("K", vim.lsp.buf.hover, "Hover Documentation")
+				end,
+			})
 
-```lua
-return {
-  {
-    "williamboman/mason.nvim",
-    config = true,
-    cmd = "Mason",
-    opts = {
-      ui = {
-        icons = {
-          package_installed = "✓",
-          package_pending = "➜",
-          package_uninstalled = "✗",
-        },
-      },
-    },
-  },
+			-- Set blink.cmp capabilities globally for all servers in one call.
+			-- vim.lsp.config('*', ...) merges into every server's config.
+			vim.lsp.config("*", {
+				capabilities = require("blink.cmp").get_lsp_capabilities(),
+			})
 
-  {
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = { "williamboman/mason.nvim" },
-    opts = {
-      ensure_installed = {
-        "lua_ls",
-        "basedpyright",
-        "ts_ls",
-        "html",
-        "cssls",
-        "jsonls",
-        "gopls",
-        "rust_analyzer",
-        "bashls",
-        "marksman",
-      },
-    },
-  },
+			-- Per-server settings. nvim-lspconfig still provides the default
+			-- root_dir, filetypes, and cmd values; we only override what differs.
+			vim.lsp.config("lua_ls", {
+				settings = {
+					Lua = {
+						diagnostics = { globals = { "vim" } },
+						workspace = { checkThirdParty = false },
+						telemetry = { enabled = false },
+					},
+				},
+			})
 
-  {
-    "WhoIsSethDaniel/mason-tool-installer.nvim",
-    dependencies = { "williamboman/mason.nvim" },
-    opts = {
-      ensure_installed = {
-        "stylua",
-        "ruff",
-        "prettierd",
-        "shfmt",
-        "gofumpt",
-        "goimports",
-        "selene",
-        "markdownlint-cli2",
-        "yamllint",
-        "jsonlint",
-      },
-      auto_update = true,
-      run_on_start = true,
-    },
-  },
-}
+			vim.lsp.config("basedpyright", {
+				settings = {
+					basedpyright = {
+						analysis = {
+							autoSearchPaths = true,
+							useLibraryCodeForTypes = true,
+							diagnosticMode = "openFilesOnly",
+							typeCheckingMode = "basic",
+						},
+					},
+				},
+			})
 
-```
+			vim.lsp.config("marksman", {
+				filetypes = { "markdown", "md" },
+			})
 
-### `lua/plugins/formatter.lua`
+			vim.lsp.config("html", {
+				filetypes = { "html", "xhtml" },
+				init_options = { provideFormatter = true },
+			})
 
-```lua
-return {
-  {
-    "stevearc/conform.nvim",
-    event = "VeryLazy",
-    keys = {
-      { "<leader>cf", function() require("conform").format { async = true } end, desc = "Format buffer" },
-    },
-    opts = {
-      formatters_by_ft = {
-        lua = { "stylua" },
-        python = { "ruff_fix", "ruff_format", "ruff_organize_imports" },
-        markdown = { "prettierd" },
-        html = { "prettierd" },
-        css = { "prettierd" },
-        scss = { "prettierd" },
-        json = { "prettierd" },
-        jsonc = { "prettierd" },
-        yaml = { "prettierd" },
-        javascript = { "prettierd" },
-        typescript = { "prettierd" },
-        javascriptreact = { "prettierd" },
-        typescriptreact = { "prettierd" },
-        go = { "gofumpt", "goimports" },
-        rust = { "rustfmt" },
-        bash = { "shfmt" },
-      },
-      format_on_save = function(bufnr)
-        if not vim.g.autoformat then return end
-        return { timeout_ms = 1000, lsp_format = "fallback" }
-      end,
-    },
-  },
-}
+			vim.lsp.config("bashls", {
+				filetypes = { "sh", "bash" },
+				settings = { bashIde = { globPattern = "*@(.sh|.inc|.bash|.command)" } },
+			})
 
-```
+			vim.lsp.config("texlab", { -- LaTeX Integrated LSP Server Config
+				settings = {
+					texlab = {
+						build = {
+							executable = "latexmk",
+							args = { "-pdf", "-interaction=nonstopmode", "-synctex=1", "%f" },
+							onSave = true,
+						},
+						forwardSearch = {
+							executable = "zathura",
+							args = { "--synctex-forward", "%l:1:%c", "%p" },
+						},
+						chktex = { onOpenAndSave = true, onType = false },
+						diagnosticsDelay = 300,
+					},
+				},
+			})
 
-### `lua/plugins/lint.lua`
+			-- ts_ls, cssls, jsonls, gopls, rust_analyzer use nvim-lspconfig defaults;
+			-- only capabilities (set globally above) are needed.
+		end,
+	},
+	{
+		"folke/trouble.nvim",
+		dependencies = { "nvim-tree/nvim-web-devicons" },
+		opts = {},
+		keys = {
+			{ "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
+			{ "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
+			{ "<leader>cs", "<cmd>Trouble symbols toggle<cr>", desc = "Symbols (Trouble)" },
+			{ "<leader>cl", "<cmd>Trouble lsp toggle<cr>", desc = "LSP (Trouble)" },
+			{
+				"<leader>ce",
+				function()
+					vim.diagnostic.open_float({ scope = "cursor", severity = vim.diagnostic.severity.ERROR })
+				end,
+				desc = "Diagnostics: Describe Error at Cursor",
+			},
+			{
+				"<leader>xe",
+				"<cmd>Trouble diagnostics toggle filter.severity=ERROR<cr>",
+				desc = "Diagnostics: Toggle All Errors",
+			},
+			{
+				"<leader>cw",
+				function()
+					vim.diagnostic.open_float({ scope = "cursor", severity = vim.diagnostic.severity.WARN })
+				end,
+				desc = "Diagnostics: Describe Warning at Cursor",
+			},
+			{
+				"<leader>xw",
+				"<cmd>Trouble diagnostics toggle filter.severity=WARN<cr>",
+				desc = "Diagnostics: Toggle All Warnings",
+			},
+			{
+				"<leader>xd",
+				function()
+					vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+				end,
+				desc = "Diagnostics: Global Toggle On/Off",
+			},
+		},
+	},
 
-```lua
-return {
-  {
-    "mfussenegger/nvim-lint",
-    event = "VeryLazy",
-    config = function()
-      local lint = require("lint")
+	-- ==========================================================================
+	-- 4. WORKSPACE AUTOMATED FORMATTING LIFECYCLES (CONFORM)
+	-- ==========================================================================
+	{
+		"stevearc/conform.nvim",
+		event = "VeryLazy",
+		keys = {
+			{
+				"<leader>cf",
+				function()
+					require("conform").format({ async = true })
+				end,
+				desc = "Format buffer",
+			},
+		},
+		opts = {
+			formatters_by_ft = {
+				lua = { "stylua" },
+				python = { "ruff_fix", "ruff_format", "ruff_organize_imports" },
+				markdown = { "prettierd" },
+				html = { "prettierd" },
+				css = { "prettierd" },
+				scss = { "prettierd" },
+				json = { "prettierd" },
+				jsonc = { "prettierd" },
+				yaml = { "prettierd" },
+				javascript = { "prettierd" },
+				typescript = { "prettierd" },
+				javascriptreact = { "prettierd" },
+				typescriptreact = { "prettierd" },
+				go = { "gofumpt", "goimports" },
+				rust = { "rustfmt" },
+				bash = { "shfmt" },
+				tex = { "latexindent" },
+				plaintex = { "latexindent" },
+			},
+			format_on_save = function(bufnr)
+				if not vim.g.autoformat then
+					return
+				end
+				return { timeout_ms = 1000, lsp_format = "fallback" }
+			end,
+		},
+	},
 
-      -- Mutate argument targets exclusively to secure critical parser functions
-      lint.linters.selene.args = {
-        "--display-style",
-        "quiet",
-        "--config",
-        vim.fn.expand("~/.config/nvim/selene.toml"),
-      }
+	-- ==========================================================================
+	-- 5. ASYNCHRONOUS WORKSPACE LINTING OPERATIONS (NVIM-LINT)
+	-- ==========================================================================
+	{
+		"mfussenegger/nvim-lint",
+		event = "VeryLazy",
+		config = function()
+			local lint = require("lint")
 
-      lint.linters_by_ft = {
-        lua = { "selene" },
-        python = { "ruff" },
-        markdown = {},
-        yaml = { "yamllint" },
-        json = { "jsonlint" },
-      }
+			lint.linters.selene = lint.linters.selene or {}
+			lint.linters.selene.args = {
+				"--display-style",
+				"quiet",
+				"--config",
+				vim.fn.expand("~/.config/nvim/selene.toml"),
+			}
 
-      vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
-        callback = function()
-          lint.try_lint()
-        end,
-      })
-    end,
-  },
+			lint.linters_by_ft = {
+				lua = { "selene" },
+				python = { "ruff" },
+				markdown = { "markdownlint-cli2" },
+				yaml = { "yamllint" },
+				json = { "jsonlint" },
+				tex = { "chktex" },
+				plaintex = { "chktex" },
+			}
+
+			vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
+				callback = function()
+					lint.try_lint()
+				end,
+			})
+		end,
+	},
 }
 
 ```
 
 ### `lua/plugins/git.lua`
 
+- [x] DONE
+
 ```lua
 return {
-  -- ── Git Gutter & Change Highlights ───────────────────────────────────────
-  {
-    "lewis6991/gitsigns.nvim",
-    event = "BufReadPre",
-    opts = {
-      -- Configured to use ONLY the uniform "▎" bar across all change definitions
-      signs = {
-        add          = { text = "▎" },
-        change       = { text = "▎" },
-        delete       = { text = "▎" },
-        topdelete    = { text = "▎" },
-        changedelete = { text = "▎" },
-        untracked    = { text = "▎" },
-      },
-      linehl = true, -- Enabled: Highlights full text line backgrounds
-      numhl = true,  -- Enabled: Highlights line numbers in the gutter column
-      attach_to_untracked = true,
-      watch_gitdir = { follow_files = true },
-      on_attach = function(bufnr)
-        local gs = require("gitsigns")
-        local function map(mode, lhs, rhs, desc)
-          vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc, silent = true })
-        end
+	{
+		"lewis6991/gitsigns.nvim",
+		event = { "BufReadPre", "BufNewFile" },
+		opts = {
+			-- Configured to use ONLY the uniform "▎" bar across all change definitions
+			signs = {
+				add = { text = "▎" },
+				change = { text = "▎" },
+				delete = { text = "▎" },
+				topdelete = { text = "▎" },
+				changedelete = { text = "▎" },
+				untracked = { text = "▎" },
+			},
+			signs_staged = {
+				add = { text = "▎" },
+				change = { text = "▎" },
+				delete = { text = "▎" },
+				topdelete = { text = "▎" },
+				changedelete = { text = "▎" },
+				untracked = { text = "▎" },
+			},
+			signs_staged_enable = true,
+			linehl = true, -- Enabled: Highlights full text line backgrounds
+			numhl = true, -- Enabled: Highlights line numbers in the gutter column
+			attach_to_untracked = true,
+			watch_gitdir = { follow_files = true },
+			on_attach = function(bufnr)
+				local gs = require("gitsigns")
+				local function map(mode, lhs, rhs, desc)
+					vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc, silent = true })
+				end
 
-        -- Standard Hunk Operations & Mappings
-        map("n", "<leader>hs", gs.stage_hunk, "Stage hunk")
-        map("n", "<leader>hr", gs.reset_hunk, "Reset hunk")
-        map("v", "<leader>hs", function() gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") }) end, "Stage hunk (visual)")
-        map("v", "<leader>hr", function() gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") }) end, "Reset hunk (visual)")
-        map("n", "<leader>hS", gs.stage_buffer, "Stage buffer")
-        map("n", "<leader>hR", gs.reset_buffer, "Reset buffer")
-        map("n", "<leader>hu", gs.undo_stage_hunk, "Undo stage hunk")
-        map("n", "<leader>hp", gs.preview_hunk, "Preview hunk")
-        map("n", "<leader>hb", function() gs.blame_line({ full = true }) end, "Blame line")
-        map("n", "<leader>tb", gs.toggle_current_line_blame, "Toggle line blame")
-        map("n", "<leader>hd", gs.diffthis, "Diff this")
-        map("n", "<leader>hD", function() gs.diffthis("~") end, "Diff this ~")
+				-- Standard Hunk Operations & Mappings
+				map("n", "<leader>hs", gs.stage_hunk, "Stage hunk")
+				map("n", "<leader>hr", gs.reset_hunk, "Reset hunk")
+				map("v", "<leader>hs", function()
+					gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+				end, "Stage hunk (visual)")
+				map("v", "<leader>hr", function()
+					gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+				end, "Reset hunk (visual)")
+				map("n", "<leader>hS", gs.stage_buffer, "Stage buffer")
+				map("n", "<leader>hR", gs.reset_buffer, "Reset buffer")
+				-- Undo_stage_hunk was deprecated in commit 8b74e56 with the note
+				-- "use stage_hunk() on staged signs". However, the community has found no clean behavioural equivalent yet (see gitsigns#1180, kickstart#1613). Keeping it as-is — it still works, just emits a deprecation warning. Revisit once gitsigns ships a proper unstage_hunk API.
+				map("n", "<leader>hu", gs.undo_stage_hunk, "Undo stage hunk")
+				map("n", "<leader>hp", gs.preview_hunk, "Preview hunk")
+				map("n", "<leader>hb", function()
+					gs.blame_line({ full = true })
+				end, "Blame line")
+				map("n", "<leader>tb", gs.toggle_current_line_blame, "Toggle line blame")
+				map("n", "<leader>hd", gs.diffthis, "Diff this")
+				map("n", "<leader>hD", function()
+					gs.diffthis("~")
+				end, "Diff this ~")
 
-        -- Text Object for hunk selection
-        map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "Select inside hunk")
-      end,
-    },
-    config = function(_, opts)
-      require("gitsigns").setup(opts)
+				-- Text Object for hunk selection
+				map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "Select inside hunk")
+			end,
+		},
+		config = function(_, opts)
+			require("gitsigns").setup(opts)
 
-      -- Dynamically links gitsigns tracking groups to the Catppuccin palette
-      local colors = _G.colors or {}
-      if colors.green then
-        -- 1. Gutter Signs (Foreground Symbols)
-        vim.api.nvim_set_hl(0, "GitSignsAdd", { fg = colors.green })
-        vim.api.nvim_set_hl(0, "GitSignsChange", { fg = colors.yellow })
-        vim.api.nvim_set_hl(0, "GitSignsDelete", { fg = colors.red })
-        vim.api.nvim_set_hl(0, "GitSignsTopdelete", { fg = colors.red })
-        vim.api.nvim_set_hl(0, "GitSignsChangedelete", { fg = colors.yellow })
-        vim.api.nvim_set_hl(0, "GitSignsUntracked", { fg = colors.green })
+			vim.schedule(function()
+				local colors = _G.colors or {}
+				if colors.green then
+					-- 1. Gutter Signs (Foreground Symbols)
+					vim.api.nvim_set_hl(0, "GitSignsAdd", { fg = colors.green })
+					vim.api.nvim_set_hl(0, "GitSignsChange", { fg = colors.yellow })
+					vim.api.nvim_set_hl(0, "GitSignsDelete", { fg = colors.red })
+					vim.api.nvim_set_hl(0, "GitSignsTopdelete", { fg = colors.red })
+					vim.api.nvim_set_hl(0, "GitSignsChangedelete", { fg = colors.yellow })
+					vim.api.nvim_set_hl(0, "GitSignsUntracked", { fg = colors.green })
 
-        -- 2. Line Number Colorizations (numhl)
-        vim.api.nvim_set_hl(0, "GitSignsAddNr", { fg = colors.green, bold = true })
-        vim.api.nvim_set_hl(0, "GitSignsChangeNr", { fg = colors.yellow, bold = true })
-        vim.api.nvim_set_hl(0, "GitSignsDeleteNr", { fg = colors.red, bold = true })
-        vim.api.nvim_set_hl(0, "GitSignsTopdeleteNr", { fg = colors.red, bold = true })
-        vim.api.nvim_set_hl(0, "GitSignsChangedeleteNr", { fg = colors.yellow, bold = true })
-        vim.api.nvim_set_hl(0, "GitSignsUntrackedNr", { fg = colors.green, bold = true })
+					-- 2. Line Number Colorizations (numhl)
+					vim.api.nvim_set_hl(0, "GitSignsAddNr", { fg = colors.green, bold = true })
+					vim.api.nvim_set_hl(0, "GitSignsChangeNr", { fg = colors.yellow, bold = true })
+					vim.api.nvim_set_hl(0, "GitSignsDeleteNr", { fg = colors.red, bold = true })
+					vim.api.nvim_set_hl(0, "GitSignsTopdeleteNr", { fg = colors.red, bold = true })
+					vim.api.nvim_set_hl(0, "GitSignsChangedeleteNr", { fg = colors.yellow, bold = true })
+					vim.api.nvim_set_hl(0, "GitSignsUntrackedNr", { fg = colors.green, bold = true })
 
-        -- 3. Full-Line Background Shading (linehl)
-        -- Uses low-intensity hex shades to maximize content legibility
-        vim.api.nvim_set_hl(0, "GitSignsAddLn", { bg = "#2d3f34" })
-        vim.api.nvim_set_hl(0, "GitSignsChangeLn", { bg = "#413f30" })
-        vim.api.nvim_set_hl(0, "GitSignsDeleteLn", { bg = "#43242a" })
-        vim.api.nvim_set_hl(0, "GitSignsTopdeleteLn", { bg = "#43242a" })
-        vim.api.nvim_set_hl(0, "GitSignsChangedeleteLn", { bg = "#413f30" })
-        vim.api.nvim_set_hl(0, "GitSignsUntrackedLn", { bg = "#2d3f34" })
-      end
-    end,
-  },
+					-- 3. Full-Line Background Shading (linehl)
+					-- Uses low-intensity hex shades to maximize content legibility
+					vim.api.nvim_set_hl(0, "GitSignsAddLn", { bg = "#2d3f34" })
+					vim.api.nvim_set_hl(0, "GitSignsChangeLn", { bg = "#413f30" })
+					vim.api.nvim_set_hl(0, "GitSignsDeleteLn", { bg = "#43242a" })
+					vim.api.nvim_set_hl(0, "GitSignsTopdeleteLn", { bg = "#43242a" })
+					vim.api.nvim_set_hl(0, "GitSignsChangedeleteLn", { bg = "#413f30" })
+					vim.api.nvim_set_hl(0, "GitSignsUntrackedLn", { bg = "#2d3f34" })
+				end
+			end)
+		end,
+	},
 
-  -- ── Git Monolithic Command Utility ───────────────────────────────────────
-  {
-    "tpope/vim-fugitive",
-    cmd = {
-      "Git",
-      "G",
-      "Gdiffsplit",
-      "Gread",
-      "Gwrite",
-      "Ggrep",
-      "GMove",
-      "GDelete",
-      "GBrowse",
-      "GRemove",
-      "GRename",
-      "Glgrep",
-      "Gedit",
-    },
-    keys = { { "<leader>gs", "<cmd>Git<cr>", desc = "Git status" } },
-  },
+	-- ── Git Monolithic Command Utility ───────────────────────────────────────
+	{
+		"tpope/vim-fugitive",
+		-- No changes needed. All commands below are current valid entries in the
+		-- modern G-uppercase naming scheme. The lowercase aliases (Gread, Gwrite,
+		-- Ggrep, Glgrep, Gedit, Gdiffsplit) are retained non-deprecated variants.
+		cmd = {
+			"Git",
+			"G",
+			"Gdiffsplit",
+			"Gread",
+			"Gwrite",
+			"Ggrep",
+			"GMove",
+			"GDelete",
+			"GBrowse",
+			"GRemove",
+			"GRename",
+			"Glgrep",
+			"Gedit",
+		},
+		keys = { { "<leader>gs", "<cmd>Git<cr>", desc = "Git status" } },
+	},
 }
 ```
 
 ### `lua/plugins/markdown.lua`
 
+- [ ] TODO
+
 ```lua
--- ── Automated Markdown Environment Setup ─────────────────────────────────────
--- Instantly runs hooks when editing Markdown documents to initialize style guidelines,
--- custom input macros, and ensure local linter configs exist non-destructively.
-vim.api.nvim_create_autocmd({ "FileType", "BufReadPost", "BufNewFile" }, {
-  pattern = { "markdown", "md" },
-  callback = function()
-    -- Ensure buffer-local options are configured for render-markdown aesthetics
-    vim.opt_local.conceallevel = 2
-    vim.opt_local.wrap = true
+-- ── Palette guard ─────────────────────────────────────────────────────────────
+-- theme.lua sets _G.colors with priority = 1000, lazy = false, so it is always
+-- loaded before this file.  This guard is a safety-net fallback only.
+if not _G.colors then
+	vim.notify(
+		"[markdown.lua] _G.colors not set — did theme.lua load first?\n"
+			.. "Expected: priority = 1000, lazy = false in theme.lua.",
+		vim.log.levels.WARN
+	)
+	_G.colors = {} -- nil fg/bg values are silently ignored by nvim_set_hl
+end
 
-    -- 1. Autopair Expansion Rules for Asterisks (**)
-    -- Typing '**' yields 2 pairs (**|**). Pressing it again yields 4 (****|****),
-    -- and a third time yields 6 (******|******) with the cursor centered perfectly.
-    vim.keymap.set("i", "**", "**<Left><Left>", { buffer = true, silent = true })
+local c = _G.colors -- local alias; avoids repeated _G lookups everywhere
 
-    -- 2. Horizontal Rule Automation (---)
-    -- Pressing '-' on an empty or whitespace-only line expands instantly into '---'
-    -- and drops down to a new line. Standard hyphens are preserved for lists.
-    vim.keymap.set("i", "-", function()
-      local col = vim.fn.col(".")
-      local line = vim.fn.getline(".")
-      if line:sub(1, col - 1):match("^%s*$") then
-        return "---<CR>"
-      else
-        return "-"
-      end
-    end, { buffer = true, expr = true, silent = true })
+-- ── Highlight Definitions ─────────────────────────────────────────────────────
+-- Applied once at startup, then re-applied on every ColorScheme event so that
+-- :colorscheme swaps never clobber these groups.
+-- default = true means we yield to the colorscheme when it defines the group
+-- itself, and only step in when the group is otherwise undefined.
 
-    -- 3. Non-Destructive .markdownlint-cli2.yaml Template Creation
-    local buf_name = vim.api.nvim_buf_get_name(0)
-    if buf_name ~= "" then
-      local dir = vim.fn.fnamemodify(buf_name, ":h")
-      local config_path = dir .. "/.markdownlint-cli2.yaml"
+local function define_highlights()
+	local hl = function(name, opts)
+		opts.default = true
+		vim.api.nvim_set_hl(0, name, opts)
+	end
 
-      -- Verify if configuration file already exists to prevent overwriting
-      if not vim.uv.fs_stat(config_path) then
-        local template = [[# Declarative Markdown Linter Configuration
+	-- ── Heading foregrounds ──────────────────────────────────────────────────
+	hl("RenderMarkdownH1", { fg = c.red,      bold = true })
+	hl("RenderMarkdownH2", { fg = c.peach,    bold = true })
+	hl("RenderMarkdownH3", { fg = c.yellow,   bold = true })
+	hl("RenderMarkdownH4", { fg = c.green,    bold = true })
+	hl("RenderMarkdownH5", { fg = c.sky,      bold = true })
+	hl("RenderMarkdownH6", { fg = c.lavender, bold = true })
+
+	-- ── Heading backgrounds — dark tints crafted from each foreground ────────
+	-- Not in _G.colors because they are render-markdown-specific blends.
+	hl("RenderMarkdownH1Bg", { bg = "#32202a" }) -- dark rose tint
+	hl("RenderMarkdownH2Bg", { bg = "#2e2018" }) -- dark peach tint
+	hl("RenderMarkdownH3Bg", { bg = "#2d2914" }) -- dark yellow tint
+	hl("RenderMarkdownH4Bg", { bg = "#162416" }) -- dark green tint
+	hl("RenderMarkdownH5Bg", { bg = "#132228" }) -- dark sky tint
+	hl("RenderMarkdownH6Bg", { bg = "#1d1d30" }) -- dark lavender tint
+
+	-- ── Code blocks ──────────────────────────────────────────────────────────
+	hl("RenderMarkdownCode",       { bg = c.mantle })             -- block fill (slightly darker than base)
+	hl("RenderMarkdownCodeBorder", { fg = c.surface2 })           -- ▄/▀ cap chars (more visible than surface1)
+	hl("RenderMarkdownCodeInline", { bg = c.surface1, fg = c.mauve }) -- `inline` (mauve pops on surface1)
+
+	-- ── Horizontal rule ──────────────────────────────────────────────────────
+	hl("RenderMarkdownDash", { fg = c.overlay0 })
+
+	-- ── Block quotes — cycling per nesting level ─────────────────────────────
+	hl("RenderMarkdownQuote1", { fg = c.blue })
+	hl("RenderMarkdownQuote2", { fg = c.mauve })
+	hl("RenderMarkdownQuote3", { fg = c.teal })
+	hl("RenderMarkdownQuote4", { fg = c.green })
+	hl("RenderMarkdownQuote5", { fg = c.yellow })
+	hl("RenderMarkdownQuote6", { fg = c.peach })
+
+	-- ── Bullets ──────────────────────────────────────────────────────────────
+	hl("RenderMarkdownBullet", { fg = c.sapphire })
+
+	-- ── Tables ───────────────────────────────────────────────────────────────
+	hl("RenderMarkdownTableHead", { fg = c.sapphire, bold = true })
+	hl("RenderMarkdownTableRow",  { fg = c.text })
+
+	-- ── Checkboxes ───────────────────────────────────────────────────────────
+	hl("RenderMarkdownUnchecked", { fg = c.overlay1 })
+	hl("RenderMarkdownChecked",   { fg = c.green })
+	hl("RenderMarkdownTodo",      { fg = c.yellow })
+
+	-- ── Links ────────────────────────────────────────────────────────────────
+	hl("RenderMarkdownLink",     { fg = c.sky,  underline = true })
+	hl("RenderMarkdownWikiLink", { fg = c.teal, underline = true }) -- [[wiki]] links
+
+	-- ── Sign column ──────────────────────────────────────────────────────────
+	hl("RenderMarkdownSign", { fg = c.overlay1 })
+
+	-- ── Inline highlight (==text==) ───────────────────────────────────────────
+	hl("RenderMarkdownInlineHighlight", { bg = c.surface1, fg = c.peach })
+
+	-- ── Callout severity colours ─────────────────────────────────────────────
+	-- Defined here so callout entries can reference them by name rather than
+	-- relying on DiagnosticOk (not styled by all colorschemes) or raw colours.
+	hl("RenderMarkdownSuccess", { fg = c.green })
+	hl("RenderMarkdownHint",    { fg = c.teal })
+	hl("RenderMarkdownInfo",    { fg = c.blue })
+	hl("RenderMarkdownWarn",    { fg = c.yellow })
+	hl("RenderMarkdownError",   { fg = c.red })
+end
+
+define_highlights()
+vim.api.nvim_create_autocmd("ColorScheme", { callback = define_highlights })
+
+-- ── Automated Buffer Setup ────────────────────────────────────────────────────
+-- Two separate autocmd registrations (FileType vs BufRead/BufNewFile) because:
+--   FileType uses filetype names ("markdown"), NOT file-path globs.
+--   BufRead/BufNewFile use file-path globs ("*.md"), NOT filetype names.
+-- Mixing them in one autocmd with both patterns produces silently dead entries.
+
+local function setup_markdown_buffer()
+	-- ── Display options ───────────────────────────────────────────────────────
+	vim.opt_local.conceallevel = 2      -- hide markup; required by render-markdown
+	vim.opt_local.concealcursor = "nc"  -- keep conceal in Normal+Cmd; reveal in Insert
+	vim.opt_local.wrap        = true
+	vim.opt_local.linebreak   = true    -- wrap at word boundaries
+	vim.opt_local.breakindent = true    -- wrapped lines keep parent indent
+	vim.opt_local.showbreak   = "  "    -- 2-space leader on continuation lines
+	vim.opt_local.spell       = true
+	vim.opt_local.spelllang   = "en_us"
+
+	-- ── Bold autopair  **|**  ────────────────────────────────────────────────
+	-- mini.pairs only handles single-character open/close symbols.
+	-- "**" (bold) and "__" (italic) are multi-char and must be raw keymaps.
+	vim.keymap.set("i", "**", "****<Left><Left>",
+		{ buffer = true, silent = true, desc = "Markdown: bold pair **|**" })
+
+	-- ── Italic autopair  __|__  ──────────────────────────────────────────────
+	vim.keymap.set("i", "__", "____<Left><Left>",
+		{ buffer = true, silent = true, desc = "Markdown: italic pair __|__" })
+
+	-- ── Horizontal rule  ---<CR>  ─────────────────────────────────────────────
+	-- Intentionally three chars: a single "-" would break list-item creation.
+	vim.keymap.set("i", "---", "---<CR>",
+		{ buffer = true, silent = true, desc = "Markdown: horizontal rule + newline" })
+
+	-- ── mini.pairs: markdown-specific buffer pairs ────────────────────────────
+	-- Standard pairs ((, [, {, ", ', `) are handled globally by mini.pairs.
+	-- * and _ are intentionally NOT mapped here — the raw keymaps above own
+	-- "**" bold and "__" italic (mini.pairs can't do multi-char pairs, so
+	-- mapping "*" as closeopen would conflict with the ** keymap above).
+	-- We only add "$" for inline LaTeX math.
+	local ok, _ = pcall(require, "mini.pairs")
+	if ok and MiniPairs then
+		MiniPairs.map_buf(0, "i", "$", {
+			action  = "closeopen",
+			pair    = "$$",
+			register = { cr = false }, -- $...$ math blocks don't expand on <CR>
+		})
+	end
+
+	-- ── Non-destructive .markdownlint-cli2.yaml creation ─────────────────────
+	-- Written once per directory; never overwrites an existing file.
+	local buf_name = vim.api.nvim_buf_get_name(0)
+	if buf_name ~= "" then
+		local dir         = vim.fn.fnamemodify(buf_name, ":h")
+		local config_path = dir .. "/.markdownlint-cli2.yaml"
+
+		if not vim.uv.fs_stat(config_path) then
+			local template = [[# Declarative Markdown Linter Configuration
 config:
   default: true
-  MD013: false # Disable strict line length rules (handled by Neovim wrap options)
-  MD033: false # Allow inline HTML elements within files
-  MD024: false # Allow multiple headers with identical naming structures
+  MD013: false  # Line length handled by Neovim wrap; not enforced here
+  MD033: false  # Allow inline HTML
+  MD024: false  # Allow duplicate heading names (changelogs, etc.)
+  MD041: false  # Don't require a top-level H1 in every file
 ]]
-        local f = io.open(config_path, "w")
-        if f then
-          f:write(template)
-          f:close()
-        end
-      end
-    end
-  end,
+			local f = io.open(config_path, "w")
+			if f then
+				f:write(template)
+				f:close()
+			end
+		end
+	end
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern  = "markdown",       -- filetype NAME, not glob
+	callback = setup_markdown_buffer,
 })
 
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+	pattern  = { "*.md", "*.markdown" }, -- file-path GLOBS, not filetype names
+	callback = setup_markdown_buffer,
+})
+
+-- ── Plugin Specs (lazy.nvim) ──────────────────────────────────────────────────
 return {
-  -- ── Modernized Markdown Renderer ──────────────────────────────────────────
-  {
-    "MeanderingProgrammer/render-markdown.nvim",
-    ft = { "markdown", "md" },
-    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
-    opts = {
-      heading = {
-        sign = true,
-        icons = { "󰉫 ", "󰉬 ", "󰉭 ", "󰉮 ", "󰉯 ", "󰉰 " },
-        backgrounds = {
-          "RenderMarkdownH1Bg",
-          "RenderMarkdownH2Bg",
-          "RenderMarkdownH3Bg",
-          "RenderMarkdownH4Bg",
-          "RenderMarkdownH5Bg",
-          "RenderMarkdownH6Bg",
-        },
-        foregrounds = {
-          "RenderMarkdownH1",
-          "RenderMarkdownH2",
-          "RenderMarkdownH3",
-          "RenderMarkdownH4",
-          "RenderMarkdownH5",
-          "RenderMarkdownH6",
-        },
-      },
-      code = {
-        sign = true,
-        width = "block",
-        right_pad = 4,
-        left_pad = 4,
-        border = "rounded",
-      },
-      pipe_table = { preset = "round" },
-      callout = {
-        note      = { raw = "[!NOTE]",      rendered = "󰋽 Note",      highlight = "DiagnosticHint" },
-        tip       = { raw = "[!TIP]",       rendered = "󰙴 Tip",       highlight = "DiagnosticOk" },
-        important = { raw = "[!IMPORTANT]", rendered = "󰋗 Important", highlight = "DiagnosticInfo" },
-        warning   = { raw = "[!WARNING]",   rendered = "󰀪 Warning",   highlight = "DiagnosticWarn" },
-        caution   = { raw = "[!CAUTION]",   rendered = "󰳦 Caution",   highlight = "DiagnosticError" },
-      },
-      link = { enabled = true, image = "󰋩 " },
-      checkbox = {
-        enabled = true,
-        unchecked = { icon = "󰄱 " },
-        checked = { icon = "󰱔 " },
-      },
-      bullet = { enabled = true, icons = { "●", "○", "◆", "◇" } },
-      quote = { enabled = true, icon = "┃" },
-      dash = { enabled = true, icon = "─" },
-    },
-  },
+	---------------------------------------------------------------------------
+	-- render-markdown.nvim — in-buffer rendering via Neovim extmarks
+	-- https://github.com/MeanderingProgrammer/render-markdown.nvim
+	---------------------------------------------------------------------------
+	{
+		"MeanderingProgrammer/render-markdown.nvim",
+		dependencies = {
+			"nvim-tree/nvim-web-devicons",
+		},
+		ft   = { "markdown" },
+		opts = {
 
-  -- ── Live Synchronized Browser Viewer (Added Extension) ─────────────────────
-  {
-    "iamcco/markdown-preview.nvim",
-    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    ft = { "markdown" },
-    build = function()
-      vim.fn["mkdp#util#install"]()
-    end,
-    keys = {
-      { "<leader>mp", "<cmd>MarkdownPreviewToggle<cr>", desc = "Markdown: Toggle Live Preview" },
-    },
-  },
+			-- Render in Normal + Command mode; Insert/Visual show raw source so
+			-- editing is never obscured by virtual-text overlays.
+			render_modes = { "n", "c" },
 
-  -- ── Task & Interactive Checkbox Operations ─────────────────────────────────
-  {
-    "thenbe/markdown-todo.nvim",
-    ft = { "md", "markdown" },
-    keys = {
-      { "<leader>tu", "<Plug>(markdown-todo-mark-as-todo)", desc = "Todo: Mark as Unresolved" },
-      { "<leader>tc", "<Plug>(markdown-todo-mark-as-complete)", desc = "Todo: Mark as Complete" },
-    },
-  },
+			-- Expose marksman / other LSP completions inline in markdown buffers.
+			completions = { lsp = { enabled = true } },
+
+			-- Anti-conceal: reveal raw source on the cursor line, with one line
+			-- of buffer above and below for smooth visual transitions.
+			anti_conceal = {
+				enabled        = true,
+				above          = 1,
+				below          = 1,
+				-- These elements are kept visible even on the cursor line because
+				-- they don't obscure editability and look cleaner always-on.
+				ignore = {
+					code_background = true,
+					indent          = true,
+					sign            = true,
+				},
+			},
+
+			-- Padding highlight blends with Normal so heading/code left margins
+			-- don't produce stray coloured strips in the gutter.
+			padding = { highlight = "Normal" },
+
+			-- Window options toggled when entering/leaving rendered view.
+			-- Required for quote.repeat_linebreak and proper wrap behaviour.
+			win_options = {
+				showbreak    = { default = "",    rendered = "  " },
+				breakindent  = { default = false, rendered = true  },
+				breakindentopt = { default = "", rendered = "" },
+			},
+
+			-- ── Headings ──────────────────────────────────────────────────────
+			heading = {
+				enabled      = true,
+				render_modes = false, -- follow global render_modes list above
+				atx          = true,  -- ATX headings:    # H1 ## H2 etc.
+				setext       = true,  -- Setext headings: underline === / ---
+				sign         = true,
+
+				-- nf-md-alpha_N_box icon set (Nerd Font ≥ 3.x)
+				icons  = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
+				signs  = { "󰫎 " }, -- single sign-column marker, cycles across levels
+
+				-- "overlay": icon left-pads to replace # markers, keeping visual
+				-- alignment independent of heading depth.
+				position = "overlay",
+				width    = "full", -- full-width coloured background bar
+
+				-- ▄/▀ half-block caps above and below each heading.
+				-- border_virtual = true draws them as virtual lines (no real lines consumed).
+				-- border_prefix  = true extends the caps behind the icon glyph.
+				border         = true,
+				border_virtual = true,
+				border_prefix  = true,
+				above = "▄",
+				below = "▀",
+
+				backgrounds = {
+					"RenderMarkdownH1Bg", "RenderMarkdownH2Bg", "RenderMarkdownH3Bg",
+					"RenderMarkdownH4Bg", "RenderMarkdownH5Bg", "RenderMarkdownH6Bg",
+				},
+				foregrounds = {
+					"RenderMarkdownH1", "RenderMarkdownH2", "RenderMarkdownH3",
+					"RenderMarkdownH4", "RenderMarkdownH5", "RenderMarkdownH6",
+				},
+			},
+
+			-- ── Org-style body indentation ────────────────────────────────────
+			-- Indents body text 2 spaces per heading level (org-indent-mode).
+			-- Works together with heading borders to express document hierarchy.
+			indent = {
+				enabled      = true,
+				per_level    = 2,
+				skip_level   = 1,
+				skip_heading = false,
+			},
+
+			-- ── Code blocks ───────────────────────────────────────────────────
+			code = {
+				enabled   = true,
+				sign      = true,
+				style     = "full",   -- highlight entire block width
+				width     = "block",  -- clip background to content width + padding
+				border    = "thick",  -- thick ▄/▀ cap effect above and below block
+				above     = "▄",
+				below     = "▀",
+				left_pad  = 2,
+				right_pad = 4,
+				language_name = true, -- display "lua", "python", etc. beside the icon
+				highlight        = "RenderMarkdownCode",
+				highlight_border = "RenderMarkdownCodeBorder",
+				highlight_inline = "RenderMarkdownCodeInline",
+			},
+
+			-- ── Horizontal rule ───────────────────────────────────────────────
+			dash = {
+				enabled   = true,
+				icon      = "─",
+				width     = "full",
+				highlight = "RenderMarkdownDash",
+			},
+
+			-- ── List bullets — 4-level cycling ───────────────────────────────
+			-- filled circle → hollow circle → filled diamond → hollow diamond
+			bullet = {
+				enabled   = true,
+				icons     = { "●", "○", "◆", "◇" },
+				left_pad  = 0,
+				right_pad = 1,
+				highlight = "RenderMarkdownBullet",
+			},
+
+			-- ── Checkboxes ────────────────────────────────────────────────────
+			checkbox = {
+				enabled = true,
+				unchecked = {
+					icon      = "󰄱 ",  -- nf-md-checkbox_blank_outline
+					highlight = "RenderMarkdownUnchecked",
+				},
+				checked = {
+					icon      = "󰱒 ",  -- nf-md-checkbox_marked (solid filled)
+					highlight = "RenderMarkdownChecked",
+				},
+				custom = {
+					-- [-] → in-progress / todo (clock icon)
+					todo = { raw = "[-]", rendered = "󰥔 ", highlight = "RenderMarkdownTodo" },
+				},
+			},
+
+			-- ── Block quotes ──────────────────────────────────────────────────
+			quote = {
+				enabled         = true,
+				icon            = "▋",
+				-- Repeat the bar glyph on soft-wrapped continuation lines.
+				-- Requires win_options: showbreak + breakindent (set above).
+				repeat_linebreak = true,
+				highlight = {
+					"RenderMarkdownQuote1", "RenderMarkdownQuote2",
+					"RenderMarkdownQuote3", "RenderMarkdownQuote4",
+					"RenderMarkdownQuote5", "RenderMarkdownQuote6",
+				},
+			},
+
+			-- ── Callouts (GitHub / Obsidian style) ────────────────────────────
+			-- Highlight groups are defined in define_highlights() above so they
+			-- always use the active palette rather than hardcoded colours.
+			callout = {
+				-- ── GitHub built-ins ─────────────────────────────────────────
+				note      = { raw = "[!NOTE]",      rendered = "󰋽 Note",      highlight = "RenderMarkdownInfo"    },
+				tip       = { raw = "[!TIP]",       rendered = "󰌶 Tip",       highlight = "RenderMarkdownSuccess" },
+				important = { raw = "[!IMPORTANT]", rendered = "󰅾 Important", highlight = "RenderMarkdownHint"    },
+				warning   = { raw = "[!WARNING]",   rendered = "󰀪 Warning",   highlight = "RenderMarkdownWarn"    },
+				caution   = { raw = "[!CAUTION]",   rendered = "󰳦 Caution",   highlight = "RenderMarkdownError"   },
+				-- ── Extended Obsidian-style callouts ─────────────────────────
+				abstract  = { raw = "[!ABSTRACT]",  rendered = "󰨸 Abstract",  highlight = "RenderMarkdownInfo"    },
+				info      = { raw = "[!INFO]",      rendered = "󰋽 Info",      highlight = "RenderMarkdownInfo"    },
+				todo      = { raw = "[!TODO]",      rendered = "󰗡 Todo",      highlight = "RenderMarkdownInfo"    },
+				hint      = { raw = "[!HINT]",      rendered = "󰴓 Hint",      highlight = "RenderMarkdownHint"    },
+				success   = { raw = "[!SUCCESS]",   rendered = "󰄬 Success",   highlight = "RenderMarkdownSuccess" },
+				question  = { raw = "[!QUESTION]",  rendered = "󰘥 Question",  highlight = "RenderMarkdownWarn"    },
+				bug       = { raw = "[!BUG]",       rendered = "󰨰 Bug",       highlight = "RenderMarkdownError"   },
+				example   = { raw = "[!EXAMPLE]",   rendered = "󰉹 Example",   highlight = "RenderMarkdownHint"    },
+				quote     = { raw = "[!QUOTE]",     rendered = "󱆨 Quote",     highlight = "RenderMarkdownQuote1"  },
+			},
+
+			-- ── Tables ────────────────────────────────────────────────────────
+			-- API changes in recent releases (2024–2025):
+			--   • border        is now an explicit 11-element array (not a string preset).
+			--   • border_enabled controls whether borders are drawn at all.
+			--   • border_virtual keeps border virtual-lines off real file lines.
+			--   • padding / min_width  are new padding/minimum-width options.
+			--   • preset        still works as a shorthand (overrides border[]).
+			-- We set preset = "none" and supply the border array explicitly for
+			-- full control and easy future customisation.
+			pipe_table = {
+				enabled      = true,
+				render_modes = false, -- follow global render_modes
+
+				-- Round-corner box-drawing borders:
+				--   top row:    ╭ ┬ ╮
+				--   middle row: ├ ┼ ┤
+				--   bottom row: ╰ ┴ ╯
+				--   edges:      │  ─
+				preset = "none", -- explicit border array below takes full precedence
+				border = {
+					"╭", "┬", "╮",
+					"├", "┼", "┤",
+					"╰", "┴", "╯",
+					"│", "─",
+				},
+				border_enabled = true,
+				border_virtual = false, -- physical lines; plays nicer with folds
+
+				cell            = "padded", -- auto-align columns with inline extmarks
+				padding         = 1,        -- spaces of padding per cell side
+				min_width       = 0,        -- no forced minimum column width
+				alignment_indicator = "━",  -- heavy horizontal bar in delimiter row
+
+				head  = "RenderMarkdownTableHead",
+				row   = "RenderMarkdownTableRow",
+				style = "full", -- "full": add top + bottom border lines
+			},
+
+			-- ── Links ─────────────────────────────────────────────────────────
+			-- "footnote", "wiki" are newer fields added in 2024–2025 releases.
+			link = {
+				enabled   = true,
+				-- Footnotes: render superscript number after the caret
+				footnote  = { superscript = true, prefix = "", suffix = "" },
+				-- Per-type icons
+				image     = "󰋩 ", -- nf-md-image
+				email     = "󰀓 ", -- nf-md-email
+				hyperlink = "󰌹 ", -- nf-md-link_variant
+				highlight = "RenderMarkdownLink",
+				wiki = {
+					icon      = "󱗖 ", -- nf-md-notebook_outline
+					highlight = "RenderMarkdownWikiLink",
+				},
+			},
+
+			-- ── Sign column ───────────────────────────────────────────────────
+			sign = {
+				enabled   = true,
+				highlight = "RenderMarkdownSign",
+			},
+
+			-- ── Inline highlight (==text==) ───────────────────────────────────
+			inline_highlight = {
+				enabled   = true,
+				highlight = "RenderMarkdownInlineHighlight",
+			},
+
+			-- ── nofile buftype override ───────────────────────────────────────
+			-- LSP hover docs, Telescope previews, and other scratch floats:
+			-- always render regardless of mode, no sign column, no padding that
+			-- causes wraps in narrow panes.
+			overrides = {
+				buftype = {
+					nofile = {
+						render_modes = true, -- true = all modes
+						padding      = { highlight = "NormalFloat" },
+						sign         = { enabled = false },
+						code         = { left_pad = 0, right_pad = 0 },
+					},
+				},
+			},
+		},
+	},
+
+	---------------------------------------------------------------------------
+	-- peek.nvim — live Deno-based HTML preview in a side window
+	-- https://github.com/toppair/peek.nvim   (requires Deno)
+	---------------------------------------------------------------------------
+	{
+		"toppair/peek.nvim",
+		ft    = { "markdown" },
+		build = "deno task --quiet build:fast",
+
+		config = function()
+			require("peek").setup({
+				auto_load        = false,      -- open explicitly with <leader>mp
+				close_on_bdelete = true,       -- close when the source buffer closes
+				syntax           = true,       -- syntax highlighting (~5 ms overhead)
+				theme            = "dark",     -- matches Catppuccin Mocha
+				update_on_change = true,       -- live-update while typing
+				app              = "webview",  -- no external browser; use "browser" on Wayland for better CSS
+				filetype         = { "markdown" },
+				throttle_at   = 200000,        -- start throttling beyond ~200 KB
+				throttle_time = "auto",
+			})
+
+			-- User commands for tooling / keymaps that call them directly
+			vim.api.nvim_create_user_command("PeekOpen",  require("peek").open,  {})
+			vim.api.nvim_create_user_command("PeekClose", require("peek").close, {})
+		end,
+
+		keys = {
+			-- Single toggle: opens if closed, closes if open.
+			{
+				"<leader>mp",
+				function()
+					local peek = require("peek")
+					if peek.is_open() then
+						peek.close()
+					else
+						peek.open()
+					end
+				end,
+				ft   = "markdown",
+				desc = "Markdown: Toggle Peek Preview",
+			},
+		},
+	},
 }
 ```
 
+### `lua/plugins/todo.lua`
+
+```lua
+-- lua/plugins/todo.lua
+-- Optimised Checkmate configuration for your Catppuccin + render-markdown stack.
+-- https://github.com/bngarren/checkmate.nvim
+
+return {
+	{
+		"bngarren/checkmate.nvim",
+		ft = "markdown", -- activate in all markdown buffers
+		dependencies = {
+			-- highlight re-apply on ColorScheme (already a core autocmd, listed for clarity)
+		},
+		opts = function()
+			-- ── Highlight helpers (resilient to color scheme changes) ──────────
+			local function set_highlights()
+				-- Safely retrieve the live Catppuccin palette dynamically
+				local has_catppuccin, cp_palettes = pcall(require, "catppuccin.palettes")
+				if not has_catppuccin then
+					return
+				end
+
+				local c = cp_palettes.get_palette("mocha") or {}
+				if next(c) == nil then
+					return
+				end
+
+				local hl = function(name, opts)
+					opts.default = true -- yield to colorscheme if it defines the group
+					vim.api.nvim_set_hl(0, name, opts)
+				end
+
+				hl("CheckmateTodoUnchecked", { fg = c.overlay1 })
+				hl("CheckmateTodoChecked", { fg = c.green, strikethrough = true })
+				hl("CheckmateTodoInProgress", { fg = c.yellow, bold = true })
+				hl("CheckmateTodoOnHold", { fg = c.peach })
+				hl("CheckmateTodoCancelled", { fg = c.surface2, strikethrough = true })
+
+				hl("CheckmateMetaStarted", { fg = c.sky })
+				hl("CheckmateMetaDone", { fg = c.green })
+				hl("CheckmateMetaDue", { fg = c.red })
+				hl("CheckmateMetaPriority", { fg = c.mauve })
+			end
+
+			-- Apply once now, then keep in sync on every future colorscheme change.
+			set_highlights()
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				callback = set_highlights,
+				group = vim.api.nvim_create_augroup("CheckmateHighlights", { clear = true }),
+			})
+
+			-- ── Core configuration ─────────────────────────────────────────────
+			return {
+				enabled = true,
+				notify = true,
+
+				-- Override the default narrow scope (todo.md, *.todo) to all markdown
+				files = { "*.md", "*.markdown" },
+
+				-- ── State markers ─────────────────────────────────────────────────
+				-- Plain GFM markers so render-markdown can parse and overlay icons.
+				-- The `name` field appears as optional virtual text next to the line.
+				todo_states = {
+					unchecked = {
+						marker = "[ ]",
+						name = "TODO",
+						style = { hl_group = "CheckmateTodoUnchecked" },
+					},
+					checked = {
+						marker = "[x]",
+						name = "DONE",
+						style = { hl_group = "CheckmateTodoChecked" },
+					},
+					custom = {
+						{
+							marker = "[-]",
+							name = "IN-PROGRESS",
+							style = { hl_group = "CheckmateTodoInProgress" },
+						},
+						{
+							marker = "[~]",
+							name = "ON-HOLD",
+							style = { hl_group = "CheckmateTodoOnHold" },
+						},
+						{
+							marker = "[/]",
+							name = "CANCELLED",
+							style = { hl_group = "CheckmateTodoCancelled" },
+						},
+					},
+				},
+
+				-- ── Metadata (inline @tags) ──────────────────────────────────────
+				metadata = {
+					started = {
+						key = "started",
+						label = "󰥔 started", -- nf-md-clock_outline
+						hl_group = "CheckmateMetaStarted",
+						on_state = { "IN-PROGRESS" },
+						value = { type = "datetime", format = "%Y-%m-%d" },
+					},
+					done = {
+						key = "done",
+						label = "󰄬 done", -- nf-md-check_circle_outline
+						hl_group = "CheckmateMetaDone",
+						on_state = { "DONE" },
+						value = { type = "datetime", format = "%Y-%m-%d" },
+					},
+					due = {
+						key = "due",
+						label = "󰃰 due", -- nf-md-calendar_clock
+						hl_group = "CheckmateMetaDue",
+						value = { type = "datetime", format = "%Y-%m-%d" },
+					},
+					priority = {
+						key = "priority",
+						label = "󰃙 priority", -- nf-md-flag_outline
+						hl_group = "CheckmateMetaPriority",
+						value = { type = "string" },
+					},
+				},
+
+				-- ── Keymaps (all buffer-local in markdown files) ─────────────────
+				keys = {
+					-- Core toggles
+					["<leader>Tt"] = {
+						rhs = "<cmd>Checkmate toggle<CR>",
+						desc = "Toggle todo state",
+						modes = { "n", "v" },
+					},
+					["<leader>Tc"] = {
+						rhs = "<cmd>Checkmate check<CR>",
+						desc = "Mark DONE",
+						modes = { "n", "v" },
+					},
+					["<leader>Tu"] = {
+						rhs = "<cmd>Checkmate uncheck<CR>",
+						desc = "Mark TODO (unchecked)",
+						modes = { "n", "v" },
+					},
+
+					-- State cycling
+					["<leader>T="] = {
+						rhs = "<cmd>Checkmate cycle_next<CR>",
+						desc = "Cycle to next state",
+						modes = { "n", "v" },
+					},
+					["<leader>T-"] = {
+						rhs = "<cmd>Checkmate cycle_previous<CR>",
+						desc = "Cycle to previous state",
+						modes = { "n", "v" },
+					},
+
+					-- Create new todo
+					["<leader>Tn"] = {
+						rhs = "<cmd>Checkmate create<CR>",
+						desc = "New todo at same level",
+						modes = { "n", "v" },
+					},
+
+					-- Quick metadata inserts
+					["<leader>Td"] = {
+						rhs = "<cmd>Checkmate add_metadata due<CR>",
+						desc = "Add @due date",
+						modes = "n",
+					},
+					["<leader>Tp"] = {
+						rhs = "<cmd>Checkmate add_metadata priority<CR>",
+						desc = "Add @priority",
+						modes = "n",
+					},
+
+					-- Archive completed items
+					["<leader>Ta"] = {
+						rhs = "<cmd>Checkmate archive<CR>",
+						desc = "Archive completed todos",
+						modes = "n",
+					},
+
+					-- Picker (search/filter todos in buffer)
+					["<leader>Ts"] = {
+						rhs = "<cmd>Checkmate select_todo<CR>",
+						desc = "Search todos (picker)",
+						modes = "n",
+					},
+				},
+
+				-- ── Picker ───────────────────────────────────────────────────────
+				picker = {
+					provider = "snacks", -- uses your existing snacks.nvim installation
+					-- fallback: mini.pick → telescope (if snacks not available)
+				},
+
+				-- ── Archive section ──────────────────────────────────────────────
+				archive = {
+					heading = "## ✔ Archive",
+					auto_fold = true,
+				},
+
+				-- ── Linting ──────────────────────────────────────────────────────
+				-- You already have markdownlint-cli2 via nvim-lint – disable the built‑in linter.
+				linter = {
+					enabled = false,
+				},
+			}
+		end,
+	},
+}
+
+```
+
 ### `lua/plugins/latex.lua`
+
+- [ ] TODO
 
 ```lua
 return {
@@ -1068,7 +1730,9 @@ return {
 
 ```
 
-### `lua/plugins/ide_extensions.lua`
+### `lua/plugins/editor.lua`
+
+- [ ] TODO
 
 ```lua
 return {
@@ -1100,18 +1764,111 @@ return {
     end,
   },
 
-  -- ── Todo Comments (Unified Task Scanning & Outlines) ────────────────────────
-  {
-    "folke/todo-comments.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    event = "BufReadPost",
-    opts = {},
+{
+  "folke/todo-comments.nvim",
+  optional = true,
+  -- stylua: ignore
+  keys = {
+    { "<leader>st", function() Snacks.picker.todo_comments() end, desc = "Todo" },
+    { "<leader>sT", function () Snacks.picker.todo_comments({ keywords = { "TODO", "FIX", "FIXME" } }) end, desc = "Todo/Fix/Fixme" },
   },
-}
+},
 
+{
+  "folke/ts-comments.nvim",
+  event = "VeryLazy",
+  opts = {},
+},
+
+-- ── mini.pairs ────────────────────────────────────────────────────────────────
+-- Autopairs plugin from the mini.nvim suite.
+-- https://github.com/nvim-mini/mini.pairs
+--
+-- Design contract with markdown.lua:
+--   • mini.pairs owns all GLOBAL single-character pair mappings ((, [, {, ", ', `).
+--   • markdown.lua owns multi-character markdown pairs (**→****, __→____) via
+--     raw vim.keymap.set() — mini.pairs cannot handle multi-char open/close symbols.
+--   • markdown.lua adds one buffer-local mini.pairs mapping for $ (inline LaTeX)
+--     via MiniPairs.map_buf() in its setup_markdown_buffer() function.
+-- ──────────────────────────────────────────────────────────────────────────────
+
+	{
+		-- Install as a standalone mini plugin (not the full mini.nvim suite).
+		-- If you already have "nvim-mini/mini.nvim" in your config, replace this
+		-- entry with { import = "mini.pairs" } or just add the setup call there.
+		"nvim-mini/mini.pairs",
+		event = "InsertEnter", -- load on first keystroke in Insert mode
+
+		config = function()
+			require("mini.pairs").setup({
+				-- ── Mode scope ────────────────────────────────────────────────
+				-- Insert mode only. Command mode is useful but can feel surprising
+				-- when typing ex-commands. Terminal mode conflicts with REPL
+				-- autopairing (ipython, radian, etc.).
+				modes = {
+					insert   = true,
+					command  = false,
+					terminal = false,
+				},
+
+				-- ── Global mappings ───────────────────────────────────────────
+				-- Each value is a pair_info table consumed by MiniPairs.map().
+				-- Supply `false` to disable a particular key entirely.
+				--
+				-- neigh_pattern is a 2-char Lua pattern matched against the
+				-- character to the LEFT and RIGHT of the cursor.
+				--   '^[^\\]'   → don't complete after a backslash (escape)
+				--   '^[^%a\\]' → don't complete after a letter or backslash
+				--                (avoids pairing ' inside words like don't)
+				mappings = {
+					-- ── Asymmetric brackets ───────────────────────────────────
+					["("] = { action = "open",  pair = "()", neigh_pattern = "^[^\\]" },
+					["["] = { action = "open",  pair = "[]", neigh_pattern = "^[^\\]" },
+					["{"] = { action = "open",  pair = "{}", neigh_pattern = "^[^\\]" },
+
+					[")"] = { action = "close", pair = "()", neigh_pattern = "^[^\\]" },
+					["]"] = { action = "close", pair = "[]", neigh_pattern = "^[^\\]" },
+					["}"] = { action = "close", pair = "{}", neigh_pattern = "^[^\\]" },
+
+					-- ── Symmetric / quote-style pairs ─────────────────────────
+					-- register.cr = false: don't expand these into a blank line on <CR>,
+					-- because quotes rarely open a block the way brackets do.
+					['"'] = {
+						action        = "closeopen",
+						pair          = '""',
+						neigh_pattern = "^[^\\]",      -- no pair after backslash
+						register      = { cr = false },
+					},
+					["'"] = {
+						action        = "closeopen",
+						pair          = "''",
+						neigh_pattern = "^[^%a\\]",    -- no pair after a letter or backslash
+						register      = { cr = false }, -- prevents pairing inside contractions
+					},
+					["`"] = {
+						action        = "closeopen",
+						pair          = "``",
+						neigh_pattern = "^[^\\]",
+						register      = { cr = false },
+					},
+
+					-- ── Intentionally not mapped here ─────────────────────────
+					-- "*" and "_"  — markdown.lua handles "**" bold and "__" italic
+					--                with dedicated keymaps; adding * / _ as
+					--                closeopen here would break them.
+					-- "$"          — markdown.lua adds this per-buffer for markdown
+					--                files only (inline LaTeX), so it is absent here
+					--                to avoid inserting paired $$ in every filetype.
+				},
+			})
+		end,
+	},
+}
 ```
 
 ### `lua/plugins/tools.lua`
+
+- [ ] TODO
 
 ```lua
 return {
@@ -1224,121 +1981,4 @@ return {
     },
   },
 }
-
-```
-
----
-
-# 📝 Corrected Architecture Documentation Block
-
-Here is the complete, production-ready `README.md` file layout reflecting the fixed `lua/core/` structure and expanded components.
-
-````txt
-# 🌌 QuantumVim: A Modular, Production-Grade Neovim Configuration
-
-A clean, blistering-fast, ideologically modular Neovim configuration built around Lua, optimized for modern software engineering workflows. This setup leverages a fully decoupled architecture utilizing **Lazy.nvim** to balance an aggressive, asynchronous plugin-loading posture with deep language server integrations.
-
----
-
-## 🎨 Philosophy & Design Pillars
-
-- **Modular Architecture:** No monolithic runtime files. Every system component—from core system options to single plugin environments—lives in isolated, declarative structures.
-- **Asynchronous Execution Engine:** Built using `blink.cmp` (Rust-powered fuzzy sorting), `conform.nvim` (non-blocking formatting on save), and `nvim-lint` (decoupled diagnostic reporting) to guarantee a zero-lag user interface.
-- **Aesthetic Continuity:** Uniform visual layers provided by **Catppuccin Mocha**, featuring clean, border-padded completion menus and absolute status/buffer lines.
-- **Ecosystem Portability:** Declarative dependencies managed natively via `mason.nvim` and `mason-tool-installer.nvim`, making cross-platform machine provisioning automated and reliable.
-
----
-
-## 🏗️ Configuration Architecture
-
-The runtime structure maps logically down into specialized domains, separating user specifications from plugin definitions:
-
-```text
-~/.config/nvim/
-├── init.lua                 # Runtime Bootstrapper & Lazy Engine Setup
-├── selene.toml              # Strict Lua Verification Code Linter Configurations
-└── lua/
-    ├── core/
-    │   ├── options.lua      # Global System Settings, Options & Timing Flags
-    │   ├── keymaps.lua      # Clipboard Protections, Safety Bindings & Maps
-    │   └── autocmds.lua     # Global File Event Operational Lifecycles
-    └── plugins/
-        ├── theme.lua        # Catppuccin Palette Core & NvChad Elements Overrides
-        ├── ui.lua           # Indentation Visual Trackers & Gutter Elements
-        ├── completion.lua   # Blink.cmp Fast Tab Cycling Logic Modules
-        ├── lsp.lua          # Diagnostic Navigation & Troubleshoot Viewers
-        ├── mason.lua        # Automatic Package Manager Tool Setup Installs
-        ├── formatter.lua    # Conform Async Auto-Format Pipeline Triggers
-        ├── lint.lua         # Nvim-Lint Structural Code Engine Analysts
-        ├── git.lua          # High-Density Line Gitsigns Highlighters
-        ├── markdown.lua     # Smart Typography, Pairs, & Automated Local Linters
-        ├── latex.lua        # Vimtex LaTeX Compiler & Inline Math Render Engines
-        ├── ide_extensions.lua # Visual Structural Outline Frameworks
-        └── tools.lua        # Telescope, Neo-Tree Explorer & Search Mechanics
-
-````
-
----
-
-## 🚀 Fast Automated Ecosystem Deployment
-
-1. Fire up Neovim (`nvim`).
-2. **Lazy.nvim** will engage instantly, mapping dependencies, retrieving source structures, and parsing targets.
-3. **Mason Tool Installer** will concurrently launch a background worker sequence, automatically downloading all specified Language Servers, Formatters, and Linters.
-4. Restart Neovim once the tracking screens report total compilation completion.
-
----
-
-## ⚙️ Key Architectural Implementations
-
-### Code Formatting Pipelines (`conform.nvim`)
-
-The environment maintains an explicit non-blocking, format-on-save lifecycle with an explicit 1000ms execution timeout constraint:
-
-```lua
-format_on_save = function(bufnr)
-  if not vim.g.autoformat then return end
-  return { timeout_ms = 1000, lsp_format = "fallback" }
-end
-
-```
-
-_Global Toggle:_ Execute `<leader>cf` to trigger manual structural alignments instantly across lines.
-
-### Rigorous Linting Lifecycles (`selene` / `nvim-lint`)
-
-Static verification steps execute asynchronously across high-frequency user interactions: `BufWritePost`, `BufReadPost`, and `InsertLeave`.
-
-To prevent directory tracking faults when processing custom standard libraries (`std = "neovim"`), the engine forces direct paths straight to the base configuration files:
-
-```lua
-lint.linters.selene.args = {
-  "--display-style", "quiet",
-  "--config", vim.fn.expand("~/.config/nvim/selene.toml"),
-}
-
-```
-
----
-
-## ⌨️ Advanced Workspace Controls
-
-### Interface Splitting & Buffers
-
-- `<leader>sv` | Split current workspace vertically
-- `<leader>sh` | Split current workspace horizontally
-- `<leader>se` | Reset all split frames to equivalent uniform spatial widths
-- `<leader>sx` | Close active frame window instantly
-- `<S-h>` | Shift focus backward to previous working text buffer
-- `<S-l>` | Shift focus forward to next working text buffer
-
-### Structural Search & Jumps
-
-- `s` | Activate Flash jump motions across all visual viewports
-- `<leader>ff` | Search names via high-speed Telescope fuzzy filters
-- `<leader>fg` | Live Grep phrases across absolute project contents
-- `<leader>e` | Toggle the Neo-Tree directory structure explorer rail
-
-```
-
 ```

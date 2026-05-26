@@ -1,8 +1,16 @@
+-- Enable the experimental high-speed Lua byte-compiler cache
 vim.loader.enable()
+
+-- Initialize leader keys prior to executing any modular modules
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Bootstrap lazy.nvim
+-- Explicitly load core operational lifecycles, options, and hotkeys
+require("core.options")
+require("core.keymaps")
+require("core.autocmds")
+
+-- Bootstrap the lazy.nvim package manager engine
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
@@ -16,30 +24,22 @@ if not vim.uv.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- Initialize Lazy with a dynamic directory scanner targeting the plugins folder
 require("lazy").setup({
-  { import = "plugins.ui" },
-  { import = "plugins.editor" },
-  { import = "plugins.mason" },
-  { import = "plugins.lsp" },
-  { import = "plugins.formatter" },
-  { import = "plugins.lint" },
-  { import = "plugins.completion" },
-  { import = "plugins.git" },
-  { import = "plugins.markdown" },
-  { import = "plugins.tools" },
+  { import = "plugins" }, -- Automatically scales to parse all nested plugin files
 }, {
-  checker = { enabled = true },
-  change_detection = { notify = true },
+  checker = { enabled = true }, -- Periodically check for plugin updates asynchronously
+  change_detection = { notify = true }, -- Send notifications when runtime configuration alters
   install = {
-    -- Use the colorscheme while lazy installs on first launch
-    colorscheme = { "catppuccin", "habamax" },
+    colorscheme = { "catppuccin", "habamax" }, -- Resilient boot color states
   },
   performance = {
     rtp = {
-      -- Disable unused built-in plugins for a leaner runtime
-      disabled_plugins = {
+      disabled_plugins = { -- Strip legacy and unneeded native distributions
         "gzip",
-        "netrwPlugin",
+        "matchit",
+        "matchparen",
+        "netrwPlugin", -- Bypassed in favor of Neo-Tree and Oil
         "rplugin",
         "tarPlugin",
         "tohtml",
@@ -49,7 +49,3 @@ require("lazy").setup({
     },
   },
 })
-
-require("core.options")
-require("core.keymaps")
-require("core.autocmds")
