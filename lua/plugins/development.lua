@@ -56,8 +56,6 @@ return {
         "markdownlint-cli2",
         "yamllint",
         "jsonlint",
-        "latexindent",
-        "chktex",
       },
       auto_update = true,
       run_on_start = true,
@@ -134,7 +132,7 @@ return {
           draw = {
             columns = {
               { "kind_icon" },
-              { "label",    gap = 1 },
+              { "label", gap = 1 },
             },
             components = {
               label = {
@@ -166,7 +164,7 @@ return {
           -- Explicitly list all sources for lua; inherit_defaults is a V2 feature
           lua = { "lsp", "path", "snippets", "buffer", "lazydev" },
           markdown = { "lsp", "path", "snippets", "buffer", "latex_symbols", "emoji", "ripgrep" },
-          tex = { "lsp", "path", "snippets", "buffer", "latex_symbols", "emoji", "ripgrep" },      -- LaTeX Integrated Context Mining
+          tex = { "lsp", "path", "snippets", "buffer", "latex_symbols", "emoji", "ripgrep" }, -- LaTeX Integrated Context Mining
           plaintex = { "lsp", "path", "snippets", "buffer", "latex_symbols", "emoji", "ripgrep" }, -- LaTeX Integrated Context Mining
         },
         providers = {
@@ -316,10 +314,10 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {},
     keys = {
-      { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>",              desc = "Diagnostics (Trouble)" },
+      { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
       { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
-      { "<leader>cs", "<cmd>Trouble symbols toggle<cr>",                  desc = "Symbols (Trouble)" },
-      { "<leader>cl", "<cmd>Trouble lsp toggle<cr>",                      desc = "LSP (Trouble)" },
+      { "<leader>cs", "<cmd>Trouble symbols toggle<cr>", desc = "Symbols (Trouble)" },
+      { "<leader>cl", "<cmd>Trouble lsp toggle<cr>", desc = "LSP (Trouble)" },
       {
         "<leader>ce",
         function()
