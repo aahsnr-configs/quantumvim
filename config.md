@@ -1,19 +1,3 @@
-Here is a comprehensive breakdown of the structural errors identified, the modernization enhancements implemented for 2026, and the complete rewritten modular configuration for your Neovim environment.
-
-### 🔍 Identified Issues & Structural Fixes
-
-1. **The Core Loading Omission (`init.lua`):** Moving `options.lua`, `keymaps.lua`, and `autocmds.lua` to `lua/core/` isolates them from Neovim's default runtime lookup. Without explicit `require("core.options")`, `require("core.keymaps")`, and `require("core.autocmds")` calls at the top of your `init.lua`, **none of your core system options, global hotkeys, or event-driven autocommands would execute.** This has been fixed by loading them right at the start of initialization.
-2. **Brittle Declarative Plugin Loading:** Manually listing every separate file inside the `lazy.setup` block is prone to silent omissions (such as missing `theme.lua`, `latex.lua`, or `ide_extensions.lua`). By replacing the explicit array list with a single automated `{ import = "plugins" }` command, Lazy.nvim dynamically crawls your entire `lua/plugins/` directory and mounts every spec automatically.
-3. **Linter Table Pollution Safeguard:** As outlined in your historical fixes, the `nvim-lint` setup has been updated to mutate only the `args` parameter of `lint.linters.selene.args` instead of overwriting the whole table, preserving internal parsing engine callbacks.
-
-### 🚀 Strategic Enhancements for `options.lua`, `keymaps.lua`, and `autocmds.lua`
-
-- **`options.lua` Modernization:** Enabled hybrid line numbering (`relativenumber`) for optimal vertical jumps, activated `smoothscroll` for elegant visual navigation over wrapped prose lines, and configured explicit visual whitespace characters (`listchars`) to eliminate layout guesswork.
-- **`keymaps.lua` Optimization:** Added strict registry protection (`"_dP`) when pasting over active visual blocks to avoid clipboard pollution. Wrapped code-block shifting commands (`>` and `<`) in visual mode to maintain focus, and introduced top-tier tab/buffer cycling mechanics via `<S-h>` and `<S-l>`.
-- **`autocmds.lua` Automation:** Created reactive event handlers that automatically equalize splits when scaling or resizing host terminals (`VimResized`), forced automated `Insert` entry on internal terminals (`TermOpen`) alongside gutter suppression, and structured a macro to let you dismiss temporary metadata windows (`help`, `qf`, `checkhealth`, `lspinfo`) instantly using just `q`.
-
----
-
 # 🌌 Complete Modular Source Configuration Tree
 
 Below is your fully revised, unified, and hardened Neovim configuration structured into clean code blocks.
@@ -199,7 +183,7 @@ map("n", "<leader>nh", "<cmd>nohlsearch<cr>", { desc = "Clear search highlights"
 
 ### `lua/core/autocmds.lua`
 
-- [ ] TODO
+- [x] TODO
 
 ```lua
 vim.g.autoformat = true -- Global configuration toggle state verified by conform.nvim
@@ -1001,7 +985,7 @@ return {
 
 ### `lua/plugins/markdown.lua`
 
-- [ ] TODO
+- [x] TODO
 
 ```lua
 -- lua/plugins/markdown.lua
@@ -1441,6 +1425,8 @@ return {
 ```
 
 ### `lua/plugins/todo.lua`
+
+- [x] TODO
 
 ```lua
 -- lua/plugins/todo.lua

@@ -1,10 +1,11 @@
 # .markdownlint-cli2.yaml
----
+# Rule configuration
 config:
   default: true
-  MD013: false          # line length
-  MD033: false          # inline HTML allowed
-  MD041: false          # first line doesn't need top-level heading
-  MD024: false          # allow duplicate headings
-fix: false
+  MD013: false # line length
+  MD033: false # inline HTML allowed
+  MD041: false # first line doesn't need top-level heading
+  MD024: false # allow duplicate headings
 
+# CLI-level options
+fix: false
