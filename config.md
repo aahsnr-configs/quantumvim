@@ -61,12 +61,12 @@ require("lazy").setup({
 
 ### `lua/core/options.lua`
 
-- [ ] TODO
+- [x] TODO
 
 ```lua
 -- ── UI & View Layer ────────────────────────────────────────────────────────
 vim.opt.number = true            -- Surface the absolute current line number
-vim.opt.relativenumber = true    -- Enable hybrid relative scaling for fast jumps
+vim.opt.relativenumber = false   -- Enable hybrid relative scaling for fast jumps
 vim.opt.signcolumn = "yes"       -- Lock sign column to prevent awkward element popping
 vim.opt.cursorline = true        -- Electronically illuminate the active screen line
 vim.opt.termguicolors = true     -- Unlock 24-bit RGB True Color spaces
@@ -81,7 +81,7 @@ vim.opt.conceallevel = 0         -- Keep decorative syntax rendering transparent
 vim.opt.wrap = true              -- Soft-wrap lines longer than the window viewport
 vim.opt.linebreak = true         -- Hard break lines at word barriers instead of letters
 vim.opt.breakindent = true       -- Visual line continuations maintain indentation depths
-vim.opt.smoothscroll = true      -- Elegant step scrolling when navigating long wrapped lines
+-- vim.opt.smoothscroll = true      -- Elegant step scrolling when navigating long wrapped lines
 vim.opt.scrolloff = 8            -- Guarantee spatial lines above/below cursor when scrolling
 vim.opt.sidescrolloff = 8        -- Guarantee spatial columns left/right of cursor
 vim.opt.fillchars = { eob = " " } -- Purge trailing tilde symbols from empty buffer tails
@@ -128,7 +128,7 @@ vim.opt.fileencoding = "utf-8"   -- Guarantee default unicode serialization
 
 ### `lua/core/keymaps.lua`
 
-- [ ] TODO
+- [x] TODO
 
 ```lua
 local map = vim.keymap.set
@@ -263,15 +263,15 @@ autocmd("FileType", {
 })
 
 -- 7. Optimized Interactive Terminal Focus Rules
-autocmd("TermOpen", {
-  group = core_group,
-  desc = "Automate immediate insert entries inside terminal scopes and hide lines",
-  callback = function()
-    vim.opt_local.number = false
-    vim.opt_local.relativenumber = false
-    vim.cmd("startinsert")
-  end,
-})
+-- autocmd("TermOpen", {
+--   group = core_group,
+--   desc = "Automate immediate insert entries inside terminal scopes and hide lines",
+--   callback = function()
+--     vim.opt_local.number = false
+--     vim.opt_local.relativenumber = false
+--     vim.cmd("startinsert")
+--   end,
+-- })
 
 ```
 
@@ -333,24 +333,11 @@ return {
 
 ```lua
 return {
-  -- ── UI Notifications ───────────────────────────────────────────────────
-  {
-    "rcarriga/nvim-notify",
-      opts = {
-      timeout = 1000,
-      max_height = function() return math.floor(vim.o.lines * 0.75) end,
-      max_width = function() return math.floor(vim.o.columns * 0.75) end,
-      render = "compact",
-    },
-  },
-
-  -- ── UI Replacement (Noice) ─────────────────────────────────────────────
   {
     "folke/noice.nvim",
     event = "VeryLazy",
     dependencies = {
       "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
     },
     opts = {
       lsp = {
@@ -374,49 +361,6 @@ return {
         lsp_doc_border = true, -- add a border to hover docs and signature help
       },
     },
-  },
-
-  -- ── Indent guides ────────────────────────────────────────────────────────
-  {
-    "lukas-reineke/indent-blankline.nvim",
-    event = "BufReadPost",
-    main = "ibl",
-    opts = { indent = { char = "│" }, scope = { enabled = false } },
-  },
-  {
-    "echasnovski/mini.indentscope",
-    event = "BufReadPost",
-    version = "*",
-    config = function()
-      require("mini.indentscope").setup({
-        symbol = "│",
-        options = { try_as_border = true },
-        draw = { animation = require("mini.indentscope").gen_animation.none() },
-      })
-
-      -- Disable indentscope on UI/non-code filetypes
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = {
-          "help",
-          "alpha",
-          "dashboard",
-          "snacks_dashboard",
-          "lazy",
-          "mason",
-          "notify",
-          "toggleterm",
-          "Trouble",
-          "trouble",
-          "qf",
-          "TelescopePrompt",
-          "startify",
-          "snacks_terminal",
-        },
-        callback = function()
-          vim.b.miniindentscope_disable = true
-        end,
-      })
-    end,
   },
 }
 ```
@@ -635,7 +579,7 @@ return {
 			},
 		},
 	},
-	{
+{
 		"neovim/nvim-lspconfig",
 		dependencies = {
 			"mason-org/mason-lspconfig.nvim",
@@ -654,9 +598,12 @@ return {
 						vim.keymap.set(mode, keys, func, extra_opts)
 					end
 
-					map("gd", vim.lsp.buf.definition, "Go to Definition")
-					map("gr", vim.lsp.buf.references, "Go to References")
-					map("gI", vim.lsp.buf.implementation, "Go to Implementation")
+					-- ── Snacks Asynchronous Picker Mappings ─────────────────────────
+					map("gd", function() Snacks.picker.lsp_definitions() end, "Go to Definition")
+					map("gr", function() Snacks.picker.lsp_references() end, "Go to References")
+					map("gI", function() Snacks.picker.lsp_implementations() end, "Go to Implementation")
+					
+					-- Standard Core Operational Hooks
 					map("<leader>cr", vim.lsp.buf.rename, "Rename Symbol")
 					map("<leader>ca", vim.lsp.buf.code_action, "Code Action", { mode = { "n", "v" } })
 					map("K", vim.lsp.buf.hover, "Hover Documentation")
@@ -1717,12 +1664,6 @@ return {
 -- Autopairs plugin from the mini.nvim suite.
 -- https://github.com/nvim-mini/mini.pairs
 --
--- Design contract with markdown.lua:
---   • mini.pairs owns all GLOBAL single-character pair mappings ((, [, {, ", ', `).
---   • markdown.lua owns multi-character markdown pairs (**→****, __→____) via
---     raw vim.keymap.set() — mini.pairs cannot handle multi-char open/close symbols.
---   • markdown.lua adds one buffer-local mini.pairs mapping for $ (inline LaTeX)
---     via MiniPairs.map_buf() in its setup_markdown_buffer() function.
 -- ──────────────────────────────────────────────────────────────────────────────
 
 	{
@@ -1784,14 +1725,6 @@ return {
 						neigh_pattern = "^[^\\]",
 						register      = { cr = false },
 					},
-
-					-- ── Intentionally not mapped here ─────────────────────────
-					-- "*" and "_"  — markdown.lua handles "**" bold and "__" italic
-					--                with dedicated keymaps; adding * / _ as
-					--                closeopen here would break them.
-					-- "$"          — markdown.lua adds this per-buffer for markdown
-					--                files only (inline LaTeX), so it is absent here
-					--                to avoid inserting paired $$ in every filetype.
 				},
 			})
 		end,
@@ -1801,11 +1734,11 @@ return {
 
 ### `lua/plugins/tools.lua`
 
-- [ ] TODO
+- [x] TODO
 
 ```lua
 return {
-  -- ── Snacks Framework (System Control Dashboards & Terminals) ────────────────
+  -- ── Snacks Framework (System Control Dashboards, Terminals & Core Swaps) ────
   {
     "folke/snacks.nvim",
     priority = 1000,
@@ -1825,11 +1758,11 @@ return {
           }, "\n"),
           keys = {
             { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
-            { icon = " ", key = "f", desc = "Find File", action = ":Telescope find_files" },
-            { icon = " ", key = "g", desc = "Find Text", action = ":Telescope live_grep" },
-            { icon = " ", key = "r", desc = "Recent Files", action = ":Telescope oldfiles" },
-            { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.open_config()" },
-            { icon = " ", key = "s", desc = "Restore Session", action = ":lua Snacks.session.restore()" },
+            { icon = " ", key = "f", desc = "Find File", action = function() Snacks.picker.files() end },
+            { icon = " ", key = "g", desc = "Find Text", action = function() Snacks.picker.grep() end },
+            { icon = " ", key = "r", desc = "Recent Files", action = function() Snacks.picker.recent() end },
+            { icon = " ", key = "c", desc = "Config", action = function() Snacks.dashboard.open_config() end },
+            { icon = " ", key = "s", desc = "Restore Session", action = function() Snacks.session.restore() end },
             { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
             { icon = " ", key = "q", desc = "Quit", action = ":qa" },
           },
@@ -1840,46 +1773,39 @@ return {
       quickfile = { enabled = true },
       statuscolumn = { enabled = true },
       words = { enabled = true },
+
+      -- ── NEW: Core Feature Modules ─────────────────────────────────────────
+      notifier = {
+        enabled = true,
+        timeout = 3000,
+        style = "compact",
+      },
+      indent = {
+        enabled = true,
+        indent = { char = "│" },
+        scope  = { enabled = false },
+      },
+      scope = { enabled = true },
+      picker = { enabled = true },
+      input = { enabled = true },
+      scroll = { enabled = true },
+      animate = { enabled = true },
     },
     keys = {
       { "<leader>lg", function() Snacks.lazygit() end, desc = "Lazygit" },
       { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss All Notifications" },
       { "<c-/>",      function() Snacks.terminal() end, mode = { "n", "t" }, desc = "Toggle Terminal" },
-    },
-  },
 
-  -- ── Telescope Module (Asynchronous Fuzzy Search Indexer) ───────────────────
-  {
-    "nvim-telescope/telescope.nvim",
-    cmd = "Telescope",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-      "nvim-telescope/telescope-ui-select.nvim",
+      -- ── NEW: Notification History ─────────────────────────────────────────
+      { "<leader>n",  function() Snacks.notifier.show_history() end, desc = "Notification History" },
+
+      -- ── NEW: Native Drop-In Picker Hotkeys ────────────────────────────────
+      { "<leader>ff", function() Snacks.picker.files() end,     desc = "Find Files" },
+      { "<leader>fg", function() Snacks.picker.grep() end,      desc = "Live Grep" },
+      { "<leader>fb", function() Snacks.picker.buffers() end,   desc = "Buffers" },
+      { "<leader>fh", function() Snacks.picker.help() end,      desc = "Help Tags" },
+      { "<leader>fr", function() Snacks.picker.recent() end,    desc = "Recent Files" },
     },
-    keys = {
-      { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
-      { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
-      { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
-      { "<leader>fh", "<cmd>Telescope help_tags<cr>", desc = "Help Tags" },
-    },
-    config = function()
-      local telescope = require("telescope")
-      telescope.setup({
-        defaults = {
-          prompt_prefix = "   ",
-          selection_caret = " ❯ ",
-          path_display = { "smart" },
-        },
-        extensions = {
-          ["ui-select"] = {
-            require("telescope.themes").get_dropdown {},
-          },
-        },
-      })
-      telescope.load_extension("fzf")
-      telescope.load_extension("ui-select")
-    end,
   },
 
   -- ── Neo-Tree Module (High-Speed Directory Structures) ───────────────────────

@@ -26,10 +26,10 @@ vim.opt.rtp:prepend(lazypath)
 
 -- Initialize Lazy with a dynamic directory scanner targeting the plugins folder
 require("lazy").setup({
-  { import = "plugins" }, -- Automatically scales to parse all nested plugin files
+  { import = "plugins" },                      -- Automatically scales to parse all nested plugin files
 }, {
-  checker = { enabled = true }, -- Periodically check for plugin updates asynchronously
-  change_detection = { notify = true }, -- Send notifications when runtime configuration alters
+  checker = { enabled = true },                -- Periodically check for plugin updates asynchronously
+  change_detection = { notify = true },        -- Send notifications when runtime configuration alters
   install = {
     colorscheme = { "catppuccin", "habamax" }, -- Resilient boot color states
   },
