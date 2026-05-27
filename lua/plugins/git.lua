@@ -21,8 +21,8 @@ return {
         untracked = { text = "▎" },
       },
       signs_staged_enable = true,
-      linehl = true, -- Enabled: Highlights full text line backgrounds
-      numhl = true,  -- Enabled: Highlights line numbers in the gutter column
+      linehl = false, -- Enabled: Highlights full text line backgrounds
+      numhl = true, -- Enabled: Highlights line numbers in the gutter column
       attach_to_untracked = true,
       watch_gitdir = { follow_files = true },
       on_attach = function(bufnr)
