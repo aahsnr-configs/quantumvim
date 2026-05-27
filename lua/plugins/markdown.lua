@@ -27,21 +27,23 @@ local function define_highlights()
   hl("RenderMarkdownH5", { fg = c.sky, bold = true })
   hl("RenderMarkdownH6", { fg = c.lavender, bold = true })
 
-  -- ── Heading backgrounds — dark tints crafted from each foreground ────────
-  hl("RenderMarkdownH1Bg", { bg = "#32202a" }) -- dark rose tint
-  hl("RenderMarkdownH2Bg", { bg = "#2e2018" }) -- dark peach tint
-  hl("RenderMarkdownH3Bg", { bg = "#2d2914" }) -- dark yellow tint
-  hl("RenderMarkdownH4Bg", { bg = "#162416" }) -- dark green tint
-  hl("RenderMarkdownH5Bg", { bg = "#132228" }) -- dark sky tint
-  hl("RenderMarkdownH6Bg", { bg = "#1d1d30" }) -- dark lavender tint
+  -- ── Heading backgrounds — barely-there tints, one shade above base ───────
+  --   No border means these are the sole visual weight of each heading level.
+  --   Kept very dark so the foreground colour carries the hierarchy signal.
+  hl("RenderMarkdownH1Bg", { bg = "#261e22" }) -- barely-rose
+  hl("RenderMarkdownH2Bg", { bg = "#241d16" }) -- barely-peach
+  hl("RenderMarkdownH3Bg", { bg = "#232112" }) -- barely-yellow
+  hl("RenderMarkdownH4Bg", { bg = "#131e13" }) -- barely-green
+  hl("RenderMarkdownH5Bg", { bg = "#101b20" }) -- barely-sky
+  hl("RenderMarkdownH6Bg", { bg = "#171726" }) -- barely-lavender
 
   -- ── Code blocks ──────────────────────────────────────────────────────────
-  hl("RenderMarkdownCode", { bg = c.mantle })                       -- block fill (slightly darker than base)
-  hl("RenderMarkdownCodeBorder", { fg = c.surface2 })               -- ▄/▀ cap chars (more visible than surface1)
-  hl("RenderMarkdownCodeInline", { bg = c.surface1, fg = c.mauve }) -- `inline` (mauve pops on surface1)
+  hl("RenderMarkdownCode", { bg = c.mantle })
+  hl("RenderMarkdownCodeBorder", { fg = c.surface1 }) -- thin cap line
+  hl("RenderMarkdownCodeInline", { bg = c.surface1, fg = c.mauve })
 
   -- ── Horizontal rule ──────────────────────────────────────────────────────
-  hl("RenderMarkdownDash", { fg = c.overlay0 })
+  hl("RenderMarkdownDash", { fg = c.surface2 })
 
   -- ── Block quotes — cycling per nesting level ─────────────────────────────
   hl("RenderMarkdownQuote1", { fg = c.blue })
@@ -52,7 +54,7 @@ local function define_highlights()
   hl("RenderMarkdownQuote6", { fg = c.peach })
 
   -- ── Bullets ──────────────────────────────────────────────────────────────
-  hl("RenderMarkdownBullet", { fg = c.sapphire })
+  hl("RenderMarkdownBullet", { fg = c.overlay1 })
 
   -- ── Tables ───────────────────────────────────────────────────────────────
   hl("RenderMarkdownTableHead", { fg = c.sapphire, bold = true })
@@ -65,10 +67,7 @@ local function define_highlights()
 
   -- ── Links ────────────────────────────────────────────────────────────────
   hl("RenderMarkdownLink", { fg = c.sky, underline = true })
-  hl("RenderMarkdownWikiLink", { fg = c.teal, underline = true }) -- [[wiki]] links
-
-  -- ── Sign column ──────────────────────────────────────────────────────────
-  hl("RenderMarkdownSign", { fg = c.overlay1 })
+  hl("RenderMarkdownWikiLink", { fg = c.teal, underline = true })
 
   -- ── Inline highlight (==text==) ───────────────────────────────────────────
   hl("RenderMarkdownInlineHighlight", { bg = c.surface1, fg = c.peach })
@@ -88,12 +87,12 @@ vim.api.nvim_create_autocmd("ColorScheme", { callback = define_highlights })
 -- ── Automated Buffer Setup ────────────────────────────────────────────────────
 local function setup_markdown_buffer()
   -- ── Display options ───────────────────────────────────────────────────────
-  vim.opt_local.conceallevel = 2     -- hide markup; required by render-markdown
+  vim.opt_local.conceallevel = 2 -- hide markup; required by render-markdown
   vim.opt_local.concealcursor = "nc" -- keep conceal in Normal+Cmd; reveal in Insert
   vim.opt_local.wrap = true
-  vim.opt_local.linebreak = true     -- wrap at word boundaries
-  vim.opt_local.breakindent = true   -- wrapped lines keep parent indent
-  vim.opt_local.showbreak = "  "     -- 2-space leader on continuation lines
+  vim.opt_local.linebreak = true -- wrap at word boundaries
+  vim.opt_local.breakindent = true -- wrapped lines keep parent indent
+  vim.opt_local.showbreak = "  " -- 2-space leader on continuation lines
   vim.opt_local.spell = true
   vim.opt_local.spelllang = "en_us"
 
@@ -141,12 +140,12 @@ config:
 end
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "markdown", -- filetype NAME, not glob
+  pattern = "markdown",
   callback = setup_markdown_buffer,
 })
 
 vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
-  pattern = { "*.md", "*.markdown" }, -- file-path GLOBS, not filetype names
+  pattern = { "*.md", "*.markdown" },
   callback = setup_markdown_buffer,
 })
 
@@ -166,14 +165,17 @@ return {
       render_modes = { "n", "c" },
       completions = { lsp = { enabled = true } },
 
+      -- ── Anti-conceal — only expose the line the cursor is on ──────────
+      --   (above=1/below=1 was unnecessarily chatty on short paragraphs)
       anti_conceal = {
         enabled = true,
-        above = 1,
-        below = 1,
+        above = 0,
+        below = 0,
         ignore = {
           code_background = true,
           indent = true,
           sign = true,
+          virtual_lines = true,
         },
       },
 
@@ -186,21 +188,21 @@ return {
       },
 
       -- ── Headings ──────────────────────────────────────────────────────
+      --   Removed ▄/▀ border framing — the coloured background strip and
+      --   the nerd-font icon are enough hierarchy signal.
+      --   Sign column also disabled: one less gutter element.
       heading = {
         enabled = true,
         render_modes = false,
         atx = true,
         setext = true,
-        sign = true,
+        sign = false, -- no gutter icon per heading
         icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
-        signs = { "󰫎 " },
         position = "overlay",
-        width = "full",
-        border = true,
-        border_virtual = true,
-        border_prefix = true,
-        above = "▄",
-        below = "▀",
+        width = "full", -- full-width background gives a clean band
+        border = false, -- no ▄/▀ cap lines above/below
+        border_virtual = false,
+        border_prefix = false,
         backgrounds = {
           "RenderMarkdownH1Bg",
           "RenderMarkdownH2Bg",
@@ -219,26 +221,27 @@ return {
         },
       },
 
-      -- ── Org-style body indentation ────────────────────────────────────
+      -- ── Org-indent — disabled ─────────────────────────────────────────
+      --   Per-level ▎ guide bars add visual noise to every body paragraph.
       indent = {
-        enabled = true,
-        per_level = 2,
-        skip_level = 1,
-        skip_heading = false,
+        enabled = false,
       },
 
       -- ── Code blocks ───────────────────────────────────────────────────
+      --   "thin" border: single highlight line instead of thick ▄/▀ caps.
+      --   "full" width: background stretches to the window edge, no
+      --   floating-box jitter when lines have different lengths.
+      --   Padding trimmed to one cell each side.
       code = {
         enabled = true,
-        sign = true,
+        sign = false, -- no sign-column language badge
         style = "full",
-        width = "block",
-        border = "thick",
-        above = "▄",
-        below = "▀",
-        left_pad = 2,
-        right_pad = 4,
+        width = "full",
+        border = "thin", -- subtle top/bottom rule, not ▄/▀ caps
+        left_pad = 1,
+        right_pad = 1,
         language_name = true,
+        language_icon = true,
         highlight = "RenderMarkdownCode",
         highlight_border = "RenderMarkdownCodeBorder",
         highlight_inline = "RenderMarkdownCodeInline",
@@ -253,9 +256,10 @@ return {
       },
 
       -- ── List bullets — 4-level cycling ───────────────────────────────
+      --   Replaced heavy filled shapes (●◆) with lighter open/small ones.
       bullet = {
         enabled = true,
-        icons = { "●", "○", "◆", "◇" },
+        icons = { "•", "◦", "‣", "⁃" },
         left_pad = 0,
         right_pad = 1,
         highlight = "RenderMarkdownBullet",
@@ -264,23 +268,18 @@ return {
       -- ── Checkboxes ────────────────────────────────────────────────────
       checkbox = {
         enabled = true,
-        unchecked = {
-          icon = "󰄱 ",
-          highlight = "RenderMarkdownUnchecked",
-        },
-        checked = {
-          icon = "󰱒 ",
-          highlight = "RenderMarkdownChecked",
-        },
+        unchecked = { icon = "󰄱 ", highlight = "RenderMarkdownUnchecked" },
+        checked = { icon = "󰱒 ", highlight = "RenderMarkdownChecked" },
         custom = {
           todo = { raw = "[-]", rendered = "󰥔 ", highlight = "RenderMarkdownTodo" },
         },
       },
 
       -- ── Block quotes ──────────────────────────────────────────────────
+      --   ▏ (U+258F) is the thinnest block element — much quieter than ▋.
       quote = {
         enabled = true,
-        icon = "▋",
+        icon = "▏",
         repeat_linebreak = true,
         highlight = {
           "RenderMarkdownQuote1",
@@ -311,32 +310,18 @@ return {
       },
 
       -- ── Tables ────────────────────────────────────────────────────────
+      --   preset = "round" supplies the rounded-corner box chars cleanly;
+      --   no need for a hand-rolled 11-element border array.
       pipe_table = {
         enabled = true,
         render_modes = false,
-        preset = "none",
-        border = {
-          "╭",
-          "┬",
-          "╮",
-          "├",
-          "┼",
-          "┤",
-          "╰",
-          "┴",
-          "╯",
-          "│",
-          "─",
-        },
-        border_enabled = true,
-        border_virtual = false,
+        preset = "round",
         cell = "padded",
         padding = 1,
         min_width = 0,
         alignment_indicator = "━",
         head = "RenderMarkdownTableHead",
         row = "RenderMarkdownTableRow",
-        style = "full",
       },
 
       -- ── Links ─────────────────────────────────────────────────────────
@@ -353,10 +338,11 @@ return {
         },
       },
 
-      -- ── Sign column ───────────────────────────────────────────────────
+      -- ── Sign column — globally off ────────────────────────────────────
+      --   Individual components also set sign=false above; this is the
+      --   catch-all for anything else that would touch the gutter.
       sign = {
-        enabled = true,
-        highlight = "RenderMarkdownSign",
+        enabled = false,
       },
 
       -- ── Inline highlight (==text==) ───────────────────────────────────
